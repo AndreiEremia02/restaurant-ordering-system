@@ -1,0 +1,115 @@
+.orders-dashboard {
+  background-color: #cce6ff;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.orders-title {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 2.5rem;
+  text-align: center;
+  color: white;
+  text-shadow: 2px 2px #000, 4px 4px #000;
+  margin-bottom: 2rem;
+}
+
+.table-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.table-card {
+  background-color: white;
+  border-radius: 20px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.table-header:hover .table-title {
+  color: #007bff;
+}
+
+.table-title {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.1rem;
+}
+
+.buzz-badge {
+  color: orange;
+  font-weight: bold;
+  margin-left: 10px;
+  font-size: 1.3rem;
+  text-shadow: 1px 1px white;
+}
+
+.arrow {
+  font-size: 1.5rem;
+}
+
+.table-orders {
+  margin-top: 1rem;
+}
+
+.order-card {
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1rem 1.5rem;
+  margin: 1rem 0;
+  border-left: 6px solid #007bff;
+}
+
+.order-card h5 {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.order-card p {
+  margin-bottom: 0.3rem;
+  font-size: 0.95rem;
+}
+
+.order-card ul {
+  padding-left: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.order-card ul li {
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+}
+
+.btn-delivered {
+  font-family: 'Luckiest Guy', cursive;
+  background-color: #000;
+  color: white;
+  border: none;
+  padding: 0.4rem 1.2rem;
+  border-radius: 30px;
+  text-shadow: 2px 2px #000;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.btn-delivered:hover {
+  background-color: #218838;
+}
+
+.order-status {
+  color: red;
+  font-weight: bold;
+}
