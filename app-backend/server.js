@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
   res.send('Serverul functioneaza!');
 });
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, { dbName: 'smashlyBD' })
   .then(() => console.log('Conectat la MongoDB Atlas'))
   .catch(err => console.error('Eroare conectare:', err));
 
