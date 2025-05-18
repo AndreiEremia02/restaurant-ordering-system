@@ -25,7 +25,7 @@ function Payment() {
 
   const fetchOrders = () => {
     if (!tableId) return;
-    axios.get(`http://localhost:3000/api/orders/${tableId}`)
+    axios.get(`http://smashly-backend.onrender.com/api/orders/${tableId}`)
       .then(res => setOrders(res.data.orders.filter(o => o.status !== 'platita')))
       .catch(() => setOrders([]));
   };
@@ -80,7 +80,7 @@ function Payment() {
     }
 
     Promise.all(orders.map(order =>
-      axios.post('http://localhost:3000/api/pay', {
+      axios.post('http://smashly-backend.onrender.com/api/pay', {
         orderId: order._id,
         paymentMethod: method,
         tipPercentage: tip

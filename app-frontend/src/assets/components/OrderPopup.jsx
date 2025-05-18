@@ -62,7 +62,7 @@ function OrderPopup({ show, setShow, timeLeft }) {
 
   const callWaiter = () => {
     axios
-      .post('http://localhost:3000/api/call-waiter', { tableNumber })
+      .post('https://smashly-backend.onrender.com/api/call-waiter', { tableNumber })
       .then(() => {
         setIsWaiterCalled(true);
         const key = `buzz_table_${tableNumber}`;
