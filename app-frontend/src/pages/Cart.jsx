@@ -2,7 +2,7 @@ import { useCart } from '../assets/components/CartContext';
 import { useState } from 'react';
 import '../assets/styles/Cart.css';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://smashly-backend.onrender.com/api';
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://smashly-backend.onrender.com/api';
 
 function Cart({ setShowPopup, setTimeLeft }) {
   const { cart, setCart } = useCart();

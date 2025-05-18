@@ -11,7 +11,7 @@ function OrdersDashboard() {
     const data = {};
     for (let i = 1; i <= 11; i++) {
       try {
-        const response = await axios.get(`http://smashly-backend.onrender.com/api/orders/${i}`);
+        const response = await axios.get(`https://smashly-backend.onrender.com/api/orders/${i}`);
         data[i] = response.data.orders || [];
       } catch (error) {
         console.error(`Error for table ${i}:`, error);
@@ -34,7 +34,7 @@ function OrdersDashboard() {
 
   const handleOrderDelivered = async (orderId, newStatus) => {
     try {
-      const response = await axios.put(`http://smashly-backend.onrender.com/api/order/${orderId}`, { newStatus });
+      const response = await axios.put(`https://smashly-backend.onrender.com/api/order/${orderId}`, { newStatus });
 
       if (newStatus === 'livrat') {
         const { secondsReduced, isLast } = response.data;
