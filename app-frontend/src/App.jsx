@@ -15,8 +15,8 @@ function App() {
 
   useEffect(() => {
     const updatePopup = () => {
-      const popupShouldShow = localStorage.getItem("popupActive") === "true";
-      const storedExpire = parseInt(localStorage.getItem("popupExpireAt"), 10);
+      const popupShouldShow = sessionStorage.getItem("popupActive") === "true";
+      const storedExpire = parseInt(sessionStorage.getItem("popupExpireAt"), 10);
       const pagesAllowed = ['/', '/menu', '/cart'];
 
       if (popupShouldShow && pagesAllowed.includes(location.pathname)) {

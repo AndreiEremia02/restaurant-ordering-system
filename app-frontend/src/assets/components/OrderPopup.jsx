@@ -10,18 +10,18 @@ function OrderPopup({ show, setShow, timeLeft }) {
   const [isWaiterCalled, setIsWaiterCalled] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
 
-  const tableNumber = parseInt(localStorage.getItem('masaCurenta'), 10) || 1;
+  const tableNumber = parseInt(sessionStorage.getItem('masaCurenta'), 10) || 1;
 
   const [secondsLeft, setSecondsLeft] = useState(() => {
-    const expireAt = parseInt(localStorage.getItem('popupExpireAt'), 10);
+    const expireAt = parseInt(sessionStorage.getItem('popupExpireAt'), 10);
     if (!expireAt || isNaN(expireAt)) return 0;
     const remaining = Math.floor((expireAt - Date.now()) / 1000);
     return remaining > 0 ? remaining : 0;
   });
 
   useEffect(() => {
-    const expireAt = parseInt(localStorage.getItem('popupExpireAt'), 10);
-    const stillActive = localStorage.getItem('popupActive') === 'true';
+    const expireAt = parseInt(sessionStorage.getItem('popupExpireAt'), 10);
+    const stillActive = sessionStorage.getItem('popupActive') === 'true';
 
     if (location.pathname === '/plata') {
       setShow(false);
@@ -45,7 +45,7 @@ function OrderPopup({ show, setShow, timeLeft }) {
 
   useEffect(() => {
     const handlePopupUpdate = () => {
-      const newExpire = parseInt(localStorage.getItem('popupExpireAt'), 10);
+      const newExpire = parseInt(sessionStorage.getItem('popupExpireAt'), 10);
       const remaining = Math.max(0, Math.floor((newExpire - Date.now()) / 1000));
       setSecondsLeft(remaining);
     };
@@ -67,7 +67,7 @@ function OrderPopup({ show, setShow, timeLeft }) {
         setIsWaiterCalled(true);
         const key = `buzz_table_${tableNumber}`;
         const expireTime = Date.now() + 2 * 60 * 1000;
-        localStorage.setItem(key, expireTime);
+        sessionStorage.setItem(key, expireTime);
         window.dispatchEvent(new CustomEvent('buzzUpdated'));
       })
       .catch(() => alert('A aparut o eroare la chemarea chelnerului.'));

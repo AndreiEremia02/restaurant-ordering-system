@@ -7,7 +7,7 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'https://smashly-backend.onren
 function Cart({ setShowPopup, setTimeLeft }) {
   const { cart, setCart } = useCart();
   const [notes, setNotes] = useState(Array(cart.length).fill(''));
-  const [tableNumber, setTableNumber] = useState(localStorage.getItem('masaCurenta') || '');
+  const [tableNumber, setTableNumber] = useState(sessionStorage.getItem('masaCurenta') || '');
   const [popupMessage, setPopupMessage] = useState('');
 
   const handleNoteChange = (index, value) => {
@@ -53,8 +53,8 @@ function Cart({ setShowPopup, setTimeLeft }) {
         throw new Error(data.mesaj || 'Server error');
       }
 
-      localStorage.setItem('popupActive', 'true');
-      localStorage.setItem('popupExpireAt', Date.now() + data.order.estimatedTime * 60000);
+      sessionStorage.setItem('popupActive', 'true');
+      sessionStorage.setItem('popupExpireAt', Date.now() + data.order.estimatedTime * 60000);
 
       setCart([]);
       setNotes([]);
@@ -122,7 +122,12 @@ function Cart({ setShowPopup, setTimeLeft }) {
                 className="table-input"
                 placeholder="ex: 4"
                 value={tableNumber}
-                onChange={(e) => setTableNumber(e.target.value)}
+                onChange={(e) => {
+                  if (!sessionStorage.getItem('masaCurenta')) {
+                    setTableNumber(e.target.value);
+                  }
+                }}
+                readOnly={!!sessionStorage.getItem('masaCurenta')}
               />
             </div>
 

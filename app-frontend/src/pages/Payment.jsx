@@ -15,6 +15,10 @@ function Payment() {
   const [showCashNotice, setShowCashNotice] = useState(false);
   const [displaySuccess, setDisplaySuccess] = useState(true);
   const navigate = useNavigate();
+  useEffect(() => {
+    const savedTable = sessionStorage.getItem('masaCurenta');
+    if (savedTable) setTableId(savedTable);
+  }, []);
 
   useEffect(() => {
     if (confirmed && method === 'card') {
@@ -87,9 +91,9 @@ function Payment() {
       })
     ))
       .then(() => {
-        localStorage.removeItem("popupActive");
-        localStorage.removeItem("popupExpireAt");
-        localStorage.removeItem("masaCurenta");
+        sessionStorage.removeItem("popupActive");
+        sessionStorage.removeItem("popupExpireAt");
+        sessionStorage.removeItem("masaCurenta");
 
         if (method === 'cash') {
           setOrders([]);
@@ -127,7 +131,12 @@ function Payment() {
               type="number"
               className="form-control"
               value={tableId}
-              onChange={(e) => setTableId(e.target.value)}
+              onChange={(e) => {
+                if (!sessionStorage.getItem("masaCurenta")) {
+                  setTableId(e.target.value);
+                }
+              }}
+              readOnly={!!sessionStorage.getItem("masaCurenta")}
             />
             <button className="btn btn-primary mt-2 w-100" onClick={fetchOrders}>
               Vezi comenzile

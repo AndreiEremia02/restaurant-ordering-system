@@ -9,7 +9,7 @@ function OrdersDashboard() {
 
   const fetchOrders = async () => {
     const data = {};
-    for (let i = 1; i <= 11; i++) {
+    for (let i = 1; i <= 8; i++) {
       try {
         const response = await axios.get(`https://smashly-backend.onrender.com/api/orders/${i}`);
         data[i] = response.data.orders || [];
@@ -23,8 +23,8 @@ function OrdersDashboard() {
 
   const refreshBuzzState = () => {
     const buzz = {};
-    for (let i = 1; i <= 11; i++) {
-      const expire = parseInt(localStorage.getItem(`buzz_table_${i}`), 10);
+    for (let i = 1; i <= 8; i++) {
+      const expire = parseInt(sessionStorage.getItem(`buzz_table_${i}`), 10);
       if (expire && expire > Date.now()) {
         buzz[i] = true;
       }
@@ -38,9 +38,9 @@ function OrdersDashboard() {
 
       if (newStatus === 'livrat') {
         const { secondsReduced, isLast } = response.data;
-        const expireAt = parseInt(localStorage.getItem("popupExpireAt"), 10);
+        const expireAt = parseInt(sessionStorage.getItem("popupExpireAt"), 10);
         const newExpireAt = Math.max(Date.now(), expireAt - secondsReduced * 1000);
-        localStorage.setItem("popupExpireAt", newExpireAt);
+        sessionStorage.setItem("popupExpireAt", newExpireAt);
 
         if (isLast) {
           window.dispatchEvent(new Event("popupTimeUpdated"));
@@ -80,7 +80,7 @@ function OrdersDashboard() {
     <div className="orders-dashboard">
       <h2 className="orders-title">Comenzi Active</h2>
       <div className="table-list">
-        {Array.from({ length: 11 }, (_, index) => {
+        {Array.from({ length: 8 }, (_, index) => {
           const tableNumber = index + 1;
           const orders = ordersByTable[tableNumber] || [];
           const isExpanded = expandedTables[tableNumber];
