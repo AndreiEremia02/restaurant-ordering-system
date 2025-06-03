@@ -20,17 +20,26 @@ function App() {
   const hideFooter = isEmployee;
 
   useEffect(() => {
+    const tableParam = params.get("tableNumber");
+    if (tableParam) {
+      sessionStorage.setItem("masaCurenta", tableParam);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    const tableNumber = sessionStorage.getItem("masaCurenta");
+    const popupExpireKey = `popupExpireAt_masa_${tableNumber}`;
+    const popupActiveKey = `popupActive_masa_${tableNumber}`;
+
     const updatePopup = () => {
-      const popupShouldShow = sessionStorage.getItem("popupActive") === "true";
-      const storedExpire = parseInt(sessionStorage.getItem("popupExpireAt"), 10);
-      const pagesAllowed = ['/', '/menu', '/cart'];
+      const popupShouldShow = sessionStorage.getItem(popupActiveKey) === "true";
+      const storedExpire = parseInt(sessionStorage.getItem(popupExpireKey), 10);
+      const now = Date.now();
+      const remaining = storedExpire && storedExpire > now
+        ? Math.floor((storedExpire - now) / 1000)
+        : 0;
 
-      if (popupShouldShow && pagesAllowed.includes(location.pathname)) {
-        const now = Date.now();
-        const remaining = storedExpire && storedExpire > now
-          ? Math.floor((storedExpire - now) / 1000)
-          : 0;
-
+      if (popupShouldShow && remaining > 0 && !location.pathname.includes("/payment")) {
         setTimeLeft(remaining);
         setShowPopup(true);
       } else {

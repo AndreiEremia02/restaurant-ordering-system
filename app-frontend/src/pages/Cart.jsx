@@ -38,7 +38,7 @@ function Cart({ setShowPopup, setTimeLeft }) {
   };
 
   const calculateTotal = () => {
-    return cart.reduce((sum, item) => sum + item.pret, 0);
+    return cart.reduce((sum, item) => sum + item.price, 0);
   };
 
   const submitOrder = async () => {
@@ -62,14 +62,19 @@ function Cart({ setShowPopup, setTimeLeft }) {
         throw new Error(data.mesaj || 'Server error');
       }
 
-      sessionStorage.setItem('popupActive', 'true');
-      sessionStorage.setItem('popupExpireAt', Date.now() + data.order.estimatedTime * 60000);
+      const expireKey = `popupExpireAt_masa_${tableNumber}`;
+      const activeKey = `popupActive_masa_${tableNumber}`;
+      const expireAt = Date.now() + data.order.estimatedTime * 60000;
+
+      sessionStorage.setItem(activeKey, 'true');
+      sessionStorage.setItem(expireKey, expireAt.toString());
 
       setCart([]);
       setNotes([]);
       displayPopupMessage('Comanda a fost trimisa cu succes!');
       setShowPopup(true);
       setTimeLeft(data.order.estimatedTime * 60);
+      window.dispatchEvent(new CustomEvent('popupTimeUpdated'));
 
       navigate(getRedirectPath('/cart'));
     } catch (error) {
@@ -96,15 +101,15 @@ function Cart({ setShowPopup, setTimeLeft }) {
                 <div className="product-row">
                   <div className="product-image-column">
                     <img
-                      src={product.imagine}
-                      alt={product.nume}
+                      src={product.image}
+                      alt={product.name}
                       className="product-image"
                     />
                   </div>
                   <div className="product-details-column">
                     <div className="product-header">
-                      <h5 className="product-name">{product.nume}</h5>
-                      <span className="product-price">{product.pret} RON</span>
+                      <h5 className="product-name">{product.name}</h5>
+                      <span className="product-price">{product.price} RON</span>
                     </div>
                     <input
                       type="text"

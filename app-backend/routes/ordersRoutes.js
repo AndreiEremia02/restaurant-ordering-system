@@ -3,12 +3,7 @@ const router = express.Router();
 const Order = require('../models/Order');
 const WaiterRequest = require('../models/WaiterRequest');
 
-const preparationTimes = {
-  "Burgers 1": 8,
-  "Burgers 2": 9,
-  "Burgers 3": 7,
-  "Drinks 3": 2
-};
+const menuData = require('./menuRoutes').menuDataFlat;
 
 router.post('/order', async (req, res) => {
   const { tableNumber, products, totalAmount, notes } = req.body;
@@ -18,9 +13,10 @@ router.post('/order', async (req, res) => {
   }
 
   const estimatedTime = products.reduce((sum, product) => {
-    const time = preparationTimes[product.name] || 5;
+    const menuItem = menuData.find(item => item.id === product.id);
+    const time = menuItem?.time || 5;
     return sum + time;
-  }, 0);
+  }, 0) + 5;
 
   try {
     const newOrder = new Order({
@@ -80,7 +76,7 @@ router.put('/order/:id', async (req, res) => {
       secondsReduced: order.estimatedTime * 60,
       isLast: await Order.countDocuments({
         tableNumber: order.tableNumber,
-        status: { $ne: 'platita', $ne: 'livrata' }
+        status: { $nin: ['platita', 'livrata'] }
       }) === 0
     });
   } catch (err) {
@@ -100,7 +96,7 @@ router.post('/call-waiter', async (req, res) => {
     const existingRequest = await WaiterRequest.findOne({ tableNumber, status: 'nepreluata' });
 
     if (existingRequest) {
-      const elapsed = Date.now() - new Date(existingRequest.time).getTime();
+      const elapsed = Date.now() - new Date(existingRequest.requestedAt).getTime();
       const twoMinutes = 2 * 60 * 1000;
 
       if (elapsed < twoMinutes) {
@@ -138,8 +134,8 @@ router.post('/pay', async (req, res) => {
       return res.status(400).json({ mesaj: 'Comanda este deja platita.' });
     }
 
-    const tip = tipPercentage ? Math.round((tipPercentage / 100) * order.total) : 0;
-    const totalWithTip = order.total + tip;
+    const tip = tipPercentage ? Math.round((tipPercentage / 100) * order.totalAmount) : 0;
+    const totalWithTip = order.totalAmount + tip;
 
     await Order.findByIdAndDelete(orderId);
 
@@ -164,7 +160,7 @@ router.post('/pay-table', async (req, res) => {
       return res.status(404).json({ mesaj: 'Nu exista comenzi de plata pentru aceasta masa.' });
     }
 
-    const total = unpaidOrders.reduce((acc, o) => acc + o.total, 0);
+    const total = unpaidOrders.reduce((acc, o) => acc + o.totalAmount, 0);
     const tip = tipPercentage ? Math.round((tipPercentage / 100) * total) : 0;
     const totalWithTip = total + tip;
 

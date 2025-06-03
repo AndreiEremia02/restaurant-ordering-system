@@ -225,4 +225,5 @@ router.get('/menu', (req, res) => {
   res.json(menuData);
 });
 
-module.exports = router;
+const menuDataFlat = menuData.flatMap(c => c.products);
+module.exports = { router, menuDataFlat };

@@ -16,22 +16,22 @@ function Payment() {
   const [displaySuccess, setDisplaySuccess] = useState(true);
 
   const navigate = useNavigate();
+  const API_BASE = import.meta.env.VITE_API_BASE || 'https://smashly-backend.onrender.com';
 
   useEffect(() => {
     const savedTable = sessionStorage.getItem('masaCurenta');
 
-      if (savedTable) {
-        setTableId(savedTable);
-      } else {
-        const params = new URLSearchParams(window.location.search);
-        const queryTable = params.get("tableNumber");
-        if (queryTable) {
-          setTableId(queryTable);
-          sessionStorage.setItem("masaCurenta", queryTable);
-        }
+    if (savedTable) {
+      setTableId(savedTable);
+    } else {
+      const params = new URLSearchParams(window.location.search);
+      const queryTable = params.get("tableNumber");
+      if (queryTable) {
+        setTableId(queryTable);
+        sessionStorage.setItem("masaCurenta", queryTable);
       }
+    }
   }, []);
-
 
   useEffect(() => {
     if (confirmed && method === 'card') {
@@ -43,7 +43,7 @@ function Payment() {
   const fetchOrders = () => {
     if (!tableId) return;
     axios
-      .get(`https://smashly-backend.onrender.com/api/orders/${tableId}`)
+      .get(`${API_BASE}/api/orders/${tableId}`)
       .then((res) => setOrders(res.data.orders.filter((o) => o.status !== 'platita')))
       .catch(() => setOrders([]));
   };
@@ -103,28 +103,31 @@ function Payment() {
 
     Promise.all(
       orders.map((order) =>
-        axios.post('https://smashly-backend.onrender.com/api/pay', {
+        axios.post(`${API_BASE}/api/pay`, {
           orderId: order._id,
           paymentMethod: method,
           tipPercentage: tip,
         })
       )
     )
-      .then(() => {
-        sessionStorage.removeItem('popupActive');
-        sessionStorage.removeItem('popupExpireAt');
-        sessionStorage.removeItem('masaCurenta');
+    .then(() => {
+      const popupExpireKey = `popupExpireAt_masa_${tableId}`;
+      const popupActiveKey = `popupActive_masa_${tableId}`;
+      sessionStorage.removeItem(popupExpireKey);
+      sessionStorage.removeItem(popupActiveKey);
+      sessionStorage.removeItem('masaCurenta');
 
-        if (method === 'cash') {
-          setOrders([]);
-          setShowCashNotice(true);
-          setTimeout(() => setShowCashNotice(false), 4000);
-        } else {
-          setConfirmed(true);
-          setDisplaySuccess(true);
-        }
-      })
-      .catch(() => alert('Eroare la plata.'));
+      window.dispatchEvent(new Event('popupTimeUpdated'));
+
+      if (method === 'cash') {
+        setOrders([]);
+        setShowCashNotice(true);
+        setTimeout(() => setShowCashNotice(false), 4000);
+      } else {
+        setConfirmed(true);
+        setDisplaySuccess(true);
+      }
+    }).catch(() => alert('Eroare la plata.'));
   };
 
   if (confirmed && method === 'card') {

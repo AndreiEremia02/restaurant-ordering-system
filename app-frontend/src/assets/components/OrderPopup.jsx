@@ -12,23 +12,26 @@ function OrderPopup({ show, setShow, timeLeft }) {
 
   const tableNumber = parseInt(sessionStorage.getItem('masaCurenta'), 10) || 1;
 
+  const popupExpireKey = `popupExpireAt_masa_${tableNumber}`;
+  const popupActiveKey = `popupActive_masa_${tableNumber}`;
+
   const [secondsLeft, setSecondsLeft] = useState(() => {
-    const expireAt = parseInt(sessionStorage.getItem('popupExpireAt'), 10);
+    const expireAt = parseInt(sessionStorage.getItem(popupExpireKey), 10);
     if (!expireAt || isNaN(expireAt)) return 0;
     const remaining = Math.floor((expireAt - Date.now()) / 1000);
     return remaining > 0 ? remaining : 0;
   });
 
   useEffect(() => {
-    const expireAt = parseInt(sessionStorage.getItem('popupExpireAt'), 10);
-    const stillActive = sessionStorage.getItem('popupActive') === 'true';
+    const expireAt = parseInt(sessionStorage.getItem(popupExpireKey), 10);
+    const stillActive = sessionStorage.getItem(popupActiveKey) === 'true';
 
     if (location.pathname.includes('/payment')) {
       setShow(false);
     } else if (stillActive && expireAt > Date.now()) {
       setShow(true);
     }
-  }, [location.pathname]);
+  }, [location.pathname, popupExpireKey, popupActiveKey]);
 
   useEffect(() => {
     if (!show) return;
@@ -45,14 +48,14 @@ function OrderPopup({ show, setShow, timeLeft }) {
 
   useEffect(() => {
     const handlePopupUpdate = () => {
-      const newExpire = parseInt(sessionStorage.getItem('popupExpireAt'), 10);
+      const newExpire = parseInt(sessionStorage.getItem(popupExpireKey), 10);
       const remaining = Math.max(0, Math.floor((newExpire - Date.now()) / 1000));
       setSecondsLeft(remaining);
     };
 
     window.addEventListener('popupTimeUpdated', handlePopupUpdate);
     return () => window.removeEventListener('popupTimeUpdated', handlePopupUpdate);
-  }, []);
+  }, [popupExpireKey]);
 
   const formatTime = (sec) => {
     const minutes = Math.floor(sec / 60).toString().padStart(2, '0');
@@ -62,7 +65,7 @@ function OrderPopup({ show, setShow, timeLeft }) {
 
   const callWaiter = () => {
     axios
-      .post('https://smashly-backend.onrender.com/api/call-waiter', { tableNumber })
+      .post(`${import.meta.env.VITE_BACKEND_URL}/api/call-waiter`, { tableNumber })
       .then(() => {
         setIsWaiterCalled(true);
         const key = `buzz_table_${tableNumber}`;

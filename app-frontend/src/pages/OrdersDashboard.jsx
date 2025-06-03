@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import "../assets/styles/OrdersDashboard.css";
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://smashly-backend.onrender.com';
+
 function OrdersDashboard() {
   const [ordersByTable, setOrdersByTable] = useState({});
   const [buzzState, setBuzzState] = useState({});
@@ -11,7 +13,7 @@ function OrdersDashboard() {
     const data = {};
     for (let i = 1; i <= 8; i++) {
       try {
-        const response = await axios.get(`https://smashly-backend.onrender.com/api/orders/${i}`);
+        const response = await axios.get(`${API_BASE}/orders/${i}`);
         data[i] = response.data.orders || [];
       } catch (error) {
         console.error(`Error for table ${i}:`, error);
@@ -32,15 +34,17 @@ function OrdersDashboard() {
     setBuzzState(buzz);
   };
 
-  const handleOrderDelivered = async (orderId, newStatus) => {
+  const handleOrderDelivered = async (orderId, newStatus, tableNumber) => {
     try {
-      const response = await axios.put(`https://smashly-backend.onrender.com/api/order/${orderId}`, { newStatus });
+      const response = await axios.put(`${API_BASE}/order/${orderId}`, { newStatus });
 
       if (newStatus === 'livrat') {
         const { secondsReduced, isLast } = response.data;
-        const expireAt = parseInt(sessionStorage.getItem("popupExpireAt"), 10);
+        const tableKey = `popupExpireAt_masa_${tableNumber}`;
+        const expireAt = parseInt(sessionStorage.getItem(tableKey), 10);
         const newExpireAt = Math.max(Date.now(), expireAt - secondsReduced * 1000);
-        sessionStorage.setItem("popupExpireAt", newExpireAt);
+        sessionStorage.setItem(tableKey, newExpireAt);
+
 
         if (isLast) {
           window.dispatchEvent(new Event("popupTimeUpdated"));
@@ -107,13 +111,13 @@ function OrdersDashboard() {
                         <p><strong>Status:</strong> <span className="order-status">{order.status}</span></p>
                         <p><strong>Total:</strong> {order.totalAmount} RON</p>
                         <ul>
-                          {order.items.map((item, idx) => (
+                          {order.products.map((item, idx) => (
                             <li key={idx}>{item.name} - {item.price} RON</li>
                           ))}
                         </ul>
                         <button
                           className="btn-delivered"
-                          onClick={() => handleOrderDelivered(order._id, 'livrat')}
+                          onClick={() => handleOrderDelivered(order._id, 'livrat', order.tableNumber)}
                         >
                           Marcheaza ca livrat
                         </button>

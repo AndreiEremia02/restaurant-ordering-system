@@ -11,11 +11,11 @@ function Menu() {
   const { addToCart } = useCart();
   const location = useLocation();
 
-  const menuData = rawMenuData.map(category => ({
+  const menuData = rawMenuData.map((category, catIndex) => ({
     ...category,
     products: category.products.map((product, index) => ({
       ...product,
-      id: `${category.category}-${index}`
+      id: `${category.category || 'cat' + catIndex}-${index}`
     }))
   }));
 
@@ -28,9 +28,10 @@ function Menu() {
     const qty = quantities[product.id] || 1;
     for (let i = 0; i < qty; i++) {
       addToCart({
-        nume: product.name,
-        pret: product.price,
-        imagine: product.image
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image
       });
     }
     setPopupMessage(`"${product.name}" a fost adaugat in cart!`);
@@ -54,7 +55,7 @@ function Menu() {
       <h2 className="menu-title">MENIU</h2>
 
       {menuData.map((cat, index) => (
-        <div key={index} className="menu-section mb-4">
+        <div key={cat.category} className="menu-section mb-4">
           <h3 className="category-title">{cat.category}</h3>
           <div className="menu-carousel">
             {cat.products.map((product) => (

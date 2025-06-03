@@ -1,12 +1,34 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
 
+  useEffect(() => {
+    const stored = sessionStorage.getItem('cart');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setCartItems(parsed);
+        }
+      } catch (e) {
+        console.error('Eroare la parsarea cosului:', e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('cart', JSON.stringify(cartItems));
+  }, [cartItems]);
+
   const addToCart = (product) => {
-    setCartItems((prevItems) => [...prevItems, product]);
+    if (product?.id && typeof product.price === 'number') {
+      setCartItems((prevItems) => [...prevItems, product]);
+    } else {
+      console.warn('Produsul adaugat nu are id sau pret valid:', product);
+    }
   };
 
   const removeFromCart = (index) => {
@@ -29,4 +51,3 @@ export function CartProvider({ children }) {
 
 const useCart = () => useContext(CartContext);
 export { useCart };
-

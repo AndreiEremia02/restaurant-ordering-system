@@ -5,18 +5,30 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
 
-const menuRoutes = require('./routes/menuRoutes');
+const { router: menuRouter } = require('./routes/menuRoutes');
 const ordersRoutes = require('./routes/ordersRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+const allowedOrigins = ['https://smashly.netlify.app', 'http://localhost:5173'];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
-app.use('/api', menuRoutes);
+app.use('/api', menuRouter);
 app.use('/api', ordersRoutes);
 
 app.get('/', (req, res) => {
