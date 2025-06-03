@@ -1,55 +1,61 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../assets/styles/Home.css";
-import burgerDesktop from "../assets/images/home-banner-desktop.png";
-import burger1 from "../assets/images/home-banner-mobile-1.png";
-import burger2 from "../assets/images/home-banner-mobile-2.png";
-import burger3 from "../assets/images/home-banner-mobile-3.png";
+import menuData from "../assets/data/menuData";
 
 function Home() {
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const hash = window.location.hash;
+  const location = useLocation();
+  const navigate = useNavigate();
 
-    if (!sessionStorage.getItem('masaCurenta')) {
-      if (params.has('tableNumber')) {
-        const numberFromQuery = params.get('tableNumber');
-        console.log("Setam masaCurenta din query param:", numberFromQuery);
-        sessionStorage.setItem('masaCurenta', numberFromQuery);
-      } else if (hash.includes('#')) {
-        const match = hash.match(/#(\d+)/);
-        if (match) {
-          console.log("Setam masaCurenta din hash:", match[1]);
-          sessionStorage.setItem('masaCurenta', match[1]);
+  useEffect(() => {
+    if (location.pathname.includes("/online-customer")) {
+      sessionStorage.removeItem("masaCurenta");
+    } else {
+      const params = new URLSearchParams(window.location.search);
+      const hash = window.location.hash;
+
+      if (!sessionStorage.getItem('masaCurenta')) {
+        if (params.has('tableNumber')) {
+          const numberFromQuery = params.get('tableNumber');
+          sessionStorage.setItem('masaCurenta', numberFromQuery);
+        } else if (hash.includes('#')) {
+          const match = hash.match(/#(\d+)/);
+          if (match) {
+            sessionStorage.setItem('masaCurenta', match[1]);
+          }
         }
       }
     }
-  }, []);
+  }, [location.pathname]);
+
+  const isOnlineCustomer = location.pathname.includes("/online-customer");
+  const masaCurenta = sessionStorage.getItem("masaCurenta");
+  const menuPath = isOnlineCustomer ? "/menu/online-customer" : `/menu${masaCurenta ? `?tableNumber=${masaCurenta}` : ""}`;
+
+  const burgers = menuData.find(cat => cat.category === "Burgers")?.products.slice(0, 3) || [];
 
   return (
     <div className="hero-section">
       <h1 className="hero-title">GATIT PROASPAT, PE LOC!</h1>
 
       <div className="burger-mobile-container d-lg-none">
-        <div className="burger-item">
-          <img src={burger1} alt="Double Cheeseburger" className="burger-mobile-img" />
-          <p className="burger-name">Double Cheeseburger</p>
-        </div>
-        <div className="burger-item">
-          <img src={burger2} alt="Fried Chicken Burger" className="burger-mobile-img" />
-          <p className="burger-name">Fried Chicken Burger</p>
-        </div>
-        <div className="burger-item">
-          <img src={burger3} alt="Philly Cheeseburger" className="burger-mobile-img" />
-          <p className="burger-name">Philly Cheeseburger</p>
-        </div>
+        {burgers.map((burger, index) => (
+          <div key={index} className="burger-item">
+            <img src={burger.image} alt={burger.name} className="burger-mobile-img" />
+            <p className="burger-name">{burger.name}</p>
+          </div>
+        ))}
       </div>
 
       <picture className="d-none d-lg-block">
-        <img src={burgerDesktop} alt="burger" className="hero-image" />
+        <img
+          src={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/images/home-banner-desktop.png`}
+          alt="burger"
+          className="hero-image"
+        />
       </picture>
 
-      <Link to="/menu" className="home-menu-button">Meniu</Link>
+      <Link to={menuPath} className="home-menu-button">Meniu</Link>
     </div>
   );
 }

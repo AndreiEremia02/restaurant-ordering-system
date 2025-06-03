@@ -13,7 +13,11 @@ function App() {
   const [showPopup, setShowPopup] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const location = useLocation();
-  const hideFooter = location.pathname === '/angajati';
+
+  const params = new URLSearchParams(location.search);
+  const isAtTable = params.has("tableNumber");
+  const isEmployee = location.pathname === "/employee";
+  const hideFooter = isEmployee;
 
   useEffect(() => {
     const updatePopup = () => {
@@ -23,10 +27,9 @@ function App() {
 
       if (popupShouldShow && pagesAllowed.includes(location.pathname)) {
         const now = Date.now();
-        const remaining =
-          storedExpire && storedExpire > now
-            ? Math.floor((storedExpire - now) / 1000)
-            : 0;
+        const remaining = storedExpire && storedExpire > now
+          ? Math.floor((storedExpire - now) / 1000)
+          : 0;
 
         setTimeLeft(remaining);
         setShowPopup(true);
@@ -42,19 +45,19 @@ function App() {
 
   return (
     <>
-      <Navbar />
+      <Navbar isAtTable={isAtTable} isEmployee={isEmployee} />
       {showPopup && (
         <OrderPopup show={showPopup} setShow={setShowPopup} timeLeft={timeLeft} />
       )}
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/home/online-customer" element={<Home />} />
         <Route path="/menu" element={<Menu />} />
-        <Route
-          path="/cart"
-          element={<Cart setShowPopup={setShowPopup} setTimeLeft={setTimeLeft} />}
-        />
-        <Route path="/angajati" element={<OrdersDashboard />} />
-        <Route path="/plata" element={<Payment />} />
+        <Route path="/menu/online-customer" element={<Menu />} />
+        <Route path="/cart" element={<Cart setShowPopup={setShowPopup} setTimeLeft={setTimeLeft} />} />
+        <Route path="/payment" element={<Payment />} />
+        <Route path="/employee" element={<OrdersDashboard />} />
       </Routes>
       {!hideFooter && <Footer />}
     </>

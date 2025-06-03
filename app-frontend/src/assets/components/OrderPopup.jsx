@@ -23,7 +23,7 @@ function OrderPopup({ show, setShow, timeLeft }) {
     const expireAt = parseInt(sessionStorage.getItem('popupExpireAt'), 10);
     const stillActive = sessionStorage.getItem('popupActive') === 'true';
 
-    if (location.pathname === '/plata') {
+    if (location.pathname.includes('/payment')) {
       setShow(false);
     } else if (stillActive && expireAt > Date.now()) {
       setShow(true);
@@ -73,7 +73,7 @@ function OrderPopup({ show, setShow, timeLeft }) {
       .catch(() => alert('A aparut o eroare la chemarea chelnerului.'));
   };
 
-  if (!show || location.pathname === '/plata') return null;
+  if (!show || location.pathname.includes('/payment')) return null;
 
   return (
     <div className={`order-popup ${isMinimized ? 'minimized' : ''}`}>
@@ -101,7 +101,10 @@ function OrderPopup({ show, setShow, timeLeft }) {
               <button className="btn-call" onClick={callWaiter} disabled={isWaiterCalled}>
                 {isWaiterCalled ? 'Chelner chemat' : 'Cheama Chelner'}
               </button>
-              <button className="btn-pay" onClick={() => navigate('/plata')}>
+              <button className="btn-pay" onClick={() => {
+                const masa = sessionStorage.getItem("masaCurenta");
+                navigate(`/payment?tableNumber=${masa}`);
+              }}>
                 Plateste
               </button>
             </div>

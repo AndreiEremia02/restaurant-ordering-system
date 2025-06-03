@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../assets/styles/Payment.css';
-import confirmImage from '../assets/images/payment-confirmation.png';
+const confirmImage = `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/images/payment-confirmation.png`;
 
 function Payment() {
   const [tableId, setTableId] = useState('');
@@ -14,11 +14,24 @@ function Payment() {
   const [validationErrors, setValidationErrors] = useState({});
   const [showCashNotice, setShowCashNotice] = useState(false);
   const [displaySuccess, setDisplaySuccess] = useState(true);
+
   const navigate = useNavigate();
+
   useEffect(() => {
     const savedTable = sessionStorage.getItem('masaCurenta');
-    if (savedTable) setTableId(savedTable);
+
+      if (savedTable) {
+        setTableId(savedTable);
+      } else {
+        const params = new URLSearchParams(window.location.search);
+        const queryTable = params.get("tableNumber");
+        if (queryTable) {
+          setTableId(queryTable);
+          sessionStorage.setItem("masaCurenta", queryTable);
+        }
+      }
   }, []);
+
 
   useEffect(() => {
     if (confirmed && method === 'card') {
@@ -29,8 +42,9 @@ function Payment() {
 
   const fetchOrders = () => {
     if (!tableId) return;
-    axios.get(`https://smashly-backend.onrender.com/api/orders/${tableId}`)
-      .then(res => setOrders(res.data.orders.filter(o => o.status !== 'platita')))
+    axios
+      .get(`https://smashly-backend.onrender.com/api/orders/${tableId}`)
+      .then((res) => setOrders(res.data.orders.filter((o) => o.status !== 'platita')))
       .catch(() => setOrders([]));
   };
 
@@ -74,26 +88,32 @@ function Payment() {
 
   const handlePayment = () => {
     if (method === 'card') {
-      const valid = Object.keys(validationErrors).length === 0 &&
-        card.name && card.number && card.expiration && card.cvv;
+      const valid =
+        Object.keys(validationErrors).length === 0 &&
+        card.name &&
+        card.number &&
+        card.expiration &&
+        card.cvv;
 
       if (!valid) {
-        alert("Te rugam sa completezi corect toate campurile.");
+        alert('Te rugam sa completezi corect toate campurile.');
         return;
       }
     }
 
-    Promise.all(orders.map(order =>
-      axios.post('https://smashly-backend.onrender.com/api/pay', {
-        orderId: order._id,
-        paymentMethod: method,
-        tipPercentage: tip
-      })
-    ))
+    Promise.all(
+      orders.map((order) =>
+        axios.post('https://smashly-backend.onrender.com/api/pay', {
+          orderId: order._id,
+          paymentMethod: method,
+          tipPercentage: tip,
+        })
+      )
+    )
       .then(() => {
-        sessionStorage.removeItem("popupActive");
-        sessionStorage.removeItem("popupExpireAt");
-        sessionStorage.removeItem("masaCurenta");
+        sessionStorage.removeItem('popupActive');
+        sessionStorage.removeItem('popupExpireAt');
+        sessionStorage.removeItem('masaCurenta');
 
         if (method === 'cash') {
           setOrders([]);
@@ -111,7 +131,14 @@ function Payment() {
     return (
       <div className="payment-confirmation-overlay fade-in">
         <img src={confirmImage} alt="Confirmare" />
-        <button className="btn-back-home" onClick={() => navigate('/')}>
+        <button
+          className="btn-back-home"
+          onClick={() => {
+            const masa = sessionStorage.getItem('masaCurenta');
+            const type = masa ? `?tableNumber=${masa}` : '?client=online-customer';
+            navigate(`/home${type}`);
+          }}
+        >
           Intoarce-te pe pagina restaurantului
         </button>
         {displaySuccess && <div className="success-popup show-popup">Plata efectuata cu succes</div>}
@@ -132,11 +159,11 @@ function Payment() {
               className="form-control"
               value={tableId}
               onChange={(e) => {
-                if (!sessionStorage.getItem("masaCurenta")) {
+                if (!sessionStorage.getItem('masaCurenta')) {
                   setTableId(e.target.value);
                 }
               }}
-              readOnly={!!sessionStorage.getItem("masaCurenta")}
+              readOnly={!!sessionStorage.getItem('masaCurenta')}
             />
             <button className="btn btn-primary mt-2 w-100" onClick={fetchOrders}>
               Vezi comenzile
@@ -192,7 +219,9 @@ function Payment() {
                       <div className="row mt-2">
                         <div className="col">
                           <label>Expirare:</label>
-                          {validationErrors.expiration && <div className="text-danger">{validationErrors.expiration}</div>}
+                          {validationErrors.expiration && (
+                            <div className="text-danger">{validationErrors.expiration}</div>
+                          )}
                           <input
                             type="text"
                             className="form-control"
@@ -219,7 +248,7 @@ function Payment() {
                   <div className="mb-3">
                     <label>Tips:</label>
                     <div className="d-flex flex-wrap gap-2 mt-1">
-                      {[0, 10, 15, 20].map(val => (
+                      {[0, 10, 15, 20].map((val) => (
                         <button
                           key={val}
                           className={`btn btn-outline-secondary ${tip === val ? 'active' : ''}`}

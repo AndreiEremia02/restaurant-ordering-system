@@ -1,5 +1,6 @@
 import { useCart } from '../assets/components/CartContext';
 import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import '../assets/styles/Cart.css';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://smashly-backend.onrender.com/api';
@@ -9,6 +10,14 @@ function Cart({ setShowPopup, setTimeLeft }) {
   const [notes, setNotes] = useState(Array(cart.length).fill(''));
   const [tableNumber, setTableNumber] = useState(sessionStorage.getItem('masaCurenta') || '');
   const [popupMessage, setPopupMessage] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const getRedirectPath = (basePath) => {
+    const params = new URLSearchParams(location.search);
+    const query = params.toString();
+    return query ? `${basePath}?${query}` : basePath;
+  };
 
   const handleNoteChange = (index, value) => {
     const updatedNotes = [...notes];
@@ -61,6 +70,8 @@ function Cart({ setShowPopup, setTimeLeft }) {
       displayPopupMessage('Comanda a fost trimisa cu succes!');
       setShowPopup(true);
       setTimeLeft(data.order.estimatedTime * 60);
+
+      navigate(getRedirectPath('/cart'));
     } catch (error) {
       console.error('Error submitting order:', error);
       displayPopupMessage('Eroare la trimiterea comenzii.');
