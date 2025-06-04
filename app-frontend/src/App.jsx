@@ -8,6 +8,8 @@ import OrdersDashboard from './pages/OrdersDashboard';
 import Payment from './pages/Payment';
 import OrderPopup from './assets/components/OrderPopup';
 import Footer from './assets/components/Footer';
+import Login from './pages/Login';
+
 
 function App() {
   const [showPopup, setShowPopup] = useState(false);
@@ -67,6 +69,7 @@ function App() {
         <Route path="/cart" element={<Cart setShowPopup={setShowPopup} setTimeLeft={setTimeLeft} />} />
         <Route path="/payment" element={<Payment />} />
         <Route path="/employee" element={<OrdersDashboard />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
       {!hideFooter && <Footer />}
     </>

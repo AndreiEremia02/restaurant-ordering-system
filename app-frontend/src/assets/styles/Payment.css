@@ -71,6 +71,10 @@
   cursor: pointer;
 }
 
+.send-payment:hover{
+  background-color: #000;
+}
+
 .payment-confirmation-overlay {
   position: fixed;
   inset: 0;
