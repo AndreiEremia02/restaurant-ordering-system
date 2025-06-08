@@ -68,7 +68,7 @@ function App() {
         <Route path="/menu/online-customer" element={<Menu />} />
         <Route path="/cart" element={<Cart setShowPopup={setShowPopup} setTimeLeft={setTimeLeft} />} />
         <Route path="/payment" element={<Payment />} />
-        <Route path="/employee" element={<OrdersDashboard />} />
+        <Route path="/employee/:id" element={<OrdersDashboard />} />
         <Route path="/login" element={<Login />} />
       </Routes>
       {!hideFooter && <Footer />}

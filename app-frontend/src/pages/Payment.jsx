@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { TEXTS } from '../assets/data/texts';
 import '../assets/styles/Payment.css';
+
 const confirmImage = `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/images/payment-confirmation.png`;
 
 function Payment() {
@@ -20,7 +22,6 @@ function Payment() {
 
   useEffect(() => {
     const savedTable = sessionStorage.getItem('masaCurenta');
-
     if (savedTable) {
       setTableId(savedTable);
     } else {
@@ -59,25 +60,25 @@ function Payment() {
     const errors = { ...validationErrors };
 
     if (field === 'name' && !/^[a-zA-Z\s]*$/.test(value)) {
-      errors.name = 'Numele nu trebuie sa contina cifre.';
+      errors.name = TEXTS.PAYMENT.VALIDATION_NAME;
     } else {
       delete errors.name;
     }
 
     if (field === 'number' && (!/^[0-9]*$/.test(value) || value.length !== 16)) {
-      errors.number = 'Numarul cardului trebuie sa contina exact 16 cifre.';
+      errors.number = TEXTS.PAYMENT.VALIDATION_NUMBER;
     } else {
       delete errors.number;
     }
 
     if (field === 'expiration' && !/^(0[1-9]|1[0-2])\/\d{2}$/.test(value)) {
-      errors.expiration = 'Formatul expirarii este MM/YY.';
+      errors.expiration = TEXTS.PAYMENT.VALIDATION_EXPIRATION;
     } else {
       delete errors.expiration;
     }
 
     if (field === 'cvv' && !/^[0-9]{3}$/.test(value)) {
-      errors.cvv = 'CVV trebuie sa contina exact 3 cifre.';
+      errors.cvv = TEXTS.PAYMENT.VALIDATION_CVV;
     } else {
       delete errors.cvv;
     }
@@ -96,7 +97,7 @@ function Payment() {
         card.cvv;
 
       if (!valid) {
-        alert('Te rugam sa completezi corect toate campurile.');
+        alert(TEXTS.PAYMENT.VALIDATION_ALERT);
         return;
       }
     }
@@ -110,24 +111,24 @@ function Payment() {
         })
       )
     )
-    .then(() => {
-      const popupExpireKey = `popupExpireAt_masa_${tableId}`;
-      const popupActiveKey = `popupActive_masa_${tableId}`;
-      sessionStorage.removeItem(popupExpireKey);
-      sessionStorage.removeItem(popupActiveKey);
-      sessionStorage.removeItem('masaCurenta');
+      .then(() => {
+        const popupExpireKey = `popupExpireAt_masa_${tableId}`;
+        const popupActiveKey = `popupActive_masa_${tableId}`;
+        sessionStorage.removeItem(popupExpireKey);
+        sessionStorage.removeItem(popupActiveKey);
+        sessionStorage.removeItem('masaCurenta');
+        window.dispatchEvent(new Event('popupTimeUpdated'));
 
-      window.dispatchEvent(new Event('popupTimeUpdated'));
-
-      if (method === 'cash') {
-        setOrders([]);
-        setShowCashNotice(true);
-        setTimeout(() => setShowCashNotice(false), 4000);
-      } else {
-        setConfirmed(true);
-        setDisplaySuccess(true);
-      }
-    }).catch(() => alert('Eroare la plata.'));
+        if (method === 'cash') {
+          setOrders([]);
+          setShowCashNotice(true);
+          setTimeout(() => setShowCashNotice(false), 4000);
+        } else {
+          setConfirmed(true);
+          setDisplaySuccess(true);
+        }
+      })
+      .catch(() => alert(TEXTS.PAYMENT.PAYMENT_ERROR));
   };
 
   if (confirmed && method === 'card') {
@@ -142,9 +143,9 @@ function Payment() {
             navigate(`/home${type}`);
           }}
         >
-          Intoarce-te pe pagina restaurantului
+          {TEXTS.PAYMENT.BACK_TO_RESTAURANT}
         </button>
-        {displaySuccess && <div className="success-popup show-popup">Plata efectuata cu succes</div>}
+        {displaySuccess && <div className="success-popup show-popup">{TEXTS.PAYMENT.PAYMENT_SUCCESS}</div>}
       </div>
     );
   }
@@ -152,11 +153,11 @@ function Payment() {
   return (
     <div className="payment-page-wrapper">
       <div className="container payment-page">
-        <h2 className="payment-title">Plata comanda</h2>
+        <h2 className="payment-title">{TEXTS.PAYMENT.TITLE}</h2>
 
         <div className="row justify-content-center mb-4">
           <div className="col-md-6">
-            <label>Numar masa:</label>
+            <label>{TEXTS.PAYMENT.TABLE_NUMBER}</label>
             <input
               type="number"
               className="form-control"
@@ -169,7 +170,7 @@ function Payment() {
               readOnly={!!sessionStorage.getItem('masaCurenta')}
             />
             <button className="btn btn-primary mt-2 w-100" onClick={fetchOrders}>
-              Vezi comenzile
+              {TEXTS.PAYMENT.SEE_ORDERS}
             </button>
           </div>
         </div>
@@ -179,27 +180,27 @@ function Payment() {
             <div className="col-md-8">
               <div className="payment-card mb-4 shadow-sm p-4">
                 <div className="card-body">
-                  <h5 className="mb-3 card-title">Comenzi:</h5>
+                  <h5 className="mb-3 card-title">{TEXTS.PAYMENT.ORDERS}</h5>
                   {orders.map((o, i) => (
-                    <p key={i}>Comanda #{o._id.slice(-6)}: {o.totalAmount} RON</p>
+                    <p key={i}>{TEXTS.PAYMENT.ORDER_LABEL} #{o._id.slice(-6)}: {o.totalAmount} {TEXTS.GENERAL.CURRENCY}</p>
                   ))}
-                  <p className="fw-bold mt-3">Total masa: {calculateTotal()} RON</p>
+                  <p className="fw-bold mt-3">{TEXTS.PAYMENT.TABLE_TOTAL}: {calculateTotal()} {TEXTS.GENERAL.CURRENCY}</p>
 
                   <div className="mb-3">
-                    <label>Metoda de plata:</label>
+                    <label>{TEXTS.PAYMENT.PAYMENT_METHOD}</label>
                     <select
                       className="form-select mt-1"
                       value={method}
                       onChange={(e) => setMethod(e.target.value)}
                     >
-                      <option value="cash">Cash</option>
-                      <option value="card">Card</option>
+                      <option value="cash">{TEXTS.PAYMENT.CASH}</option>
+                      <option value="card">{TEXTS.PAYMENT.CARD}</option>
                     </select>
                   </div>
 
                   {method === 'card' && (
                     <div className="mb-3">
-                      <label>Nume de pe card:</label>
+                      <label>{TEXTS.PAYMENT.CARD_NAME}</label>
                       {validationErrors.name && <div className="text-danger">{validationErrors.name}</div>}
                       <input
                         type="text"
@@ -209,7 +210,7 @@ function Payment() {
                         onChange={(e) => handleCardChange('name', e.target.value)}
                       />
 
-                      <label className="mt-2">Numar card:</label>
+                      <label className="mt-2">{TEXTS.PAYMENT.CARD_NUMBER}</label>
                       {validationErrors.number && <div className="text-danger">{validationErrors.number}</div>}
                       <input
                         type="text"
@@ -221,7 +222,7 @@ function Payment() {
 
                       <div className="row mt-2">
                         <div className="col">
-                          <label>Expirare:</label>
+                          <label>{TEXTS.PAYMENT.EXPIRATION}</label>
                           {validationErrors.expiration && (
                             <div className="text-danger">{validationErrors.expiration}</div>
                           )}
@@ -234,7 +235,7 @@ function Payment() {
                           />
                         </div>
                         <div className="col">
-                          <label>CVV:</label>
+                          <label>{TEXTS.PAYMENT.CVV}</label>
                           {validationErrors.cvv && <div className="text-danger">{validationErrors.cvv}</div>}
                           <input
                             type="text"
@@ -249,7 +250,7 @@ function Payment() {
                   )}
 
                   <div className="mb-3">
-                    <label>Tips:</label>
+                    <label>{TEXTS.PAYMENT.TIPS}</label>
                     <div className="d-flex flex-wrap gap-2 mt-1">
                       {[0, 10, 15, 20].map((val) => (
                         <button
@@ -266,12 +267,12 @@ function Payment() {
                       className="form-control mt-2"
                       value={tip}
                       onChange={(e) => setTip(Number(e.target.value))}
-                      placeholder="Alt procent"
+                      placeholder={TEXTS.PAYMENT.CUSTOM_TIP}
                     />
                   </div>
 
                   <button className="send-payment w-100" onClick={handlePayment}>
-                    Plateste Nota
+                    {TEXTS.PAYMENT.PAY_NOW}
                   </button>
                 </div>
               </div>
@@ -280,7 +281,7 @@ function Payment() {
         )}
 
         {showCashNotice && method === 'cash' && (
-          <div className="cash-popup">Chelnerul soseste imediat</div>
+          <div className="cash-popup">{TEXTS.PAYMENT.CASH_NOTICE}</div>
         )}
       </div>
     </div>

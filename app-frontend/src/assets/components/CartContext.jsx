@@ -1,4 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
+import { TEXTS } from '../data/texts';
 
 const CartContext = createContext();
 
@@ -14,7 +15,7 @@ export function CartProvider({ children }) {
           setCartItems(parsed);
         }
       } catch (e) {
-        console.error('Eroare la parsarea cosului:', e);
+        console.error(TEXTS.CART_CONTEXT.PARSE_ERROR, e);
       }
     }
   }, []);
@@ -27,7 +28,7 @@ export function CartProvider({ children }) {
     if (product?.id && typeof product.price === 'number') {
       setCartItems((prevItems) => [...prevItems, product]);
     } else {
-      console.warn('Produsul adaugat nu are id sau pret valid:', product);
+      console.warn(TEXTS.CART_CONTEXT.ADD_WARNING, product);
     }
   };
 

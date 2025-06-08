@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "../styles/EmployeeAuthForm.css";
+import { TEXTS } from "../data/texts";
 
 function EmployeeAuthForm() {
   const [mode, setMode] = useState("login");
@@ -25,16 +27,16 @@ function EmployeeAuthForm() {
   const validateField = (name, value) => {
     const newErrors = { ...errors };
     if (name === "employeeId" && mode === "login") {
-      newErrors.employeeId = /^\d{6}$/.test(value) ? "" : "ID trebuie sa contina 6 cifre";
+      newErrors.employeeId = /^\d{6}$/.test(value) ? "" : TEXTS.EMPLOYEE_AUTH.ID_ERROR;
     }
     if (name === "name") {
-      newErrors.name = /^[a-zA-Z\s]+$/.test(value) ? "" : "Numele trebuie sa contina doar litere";
+      newErrors.name = /^[a-zA-Z\s]+$/.test(value) ? "" : TEXTS.EMPLOYEE_AUTH.NAME_ERROR;
     }
     if (name === "email" && mode === "register") {
-      newErrors.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? "" : "Email invalid";
+      newErrors.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? "" : TEXTS.EMPLOYEE_AUTH.EMAIL_ERROR;
     }
     if (name === "password") {
-      newErrors.password = value.length >= 6 ? "" : "Parola trebuie sa aiba minim 6 caractere";
+      newErrors.password = value.length >= 6 ? "" : TEXTS.EMPLOYEE_AUTH.PASSWORD_ERROR;
     }
     setErrors(newErrors);
   };
@@ -46,11 +48,13 @@ function EmployeeAuthForm() {
     const tempErrors = {};
     fields.forEach((field) => {
       validateField(field, inputs[field]);
-      if (!inputs[field]) tempErrors[field] = "Camp obligatoriu";
+      if (!inputs[field]) tempErrors[field] = TEXTS.EMPLOYEE_AUTH.REQUIRED_FIELD;
     });
     setErrors((prev) => ({ ...prev, ...tempErrors }));
     return Object.values({ ...errors, ...tempErrors }).every((e) => e === "");
   };
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,22 +62,34 @@ function EmployeeAuthForm() {
 
     try {
       if (mode === "login") {
-        await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/employees/login`, {
-          employeeId: inputs.employeeId,
-          name: inputs.name,
-          password: inputs.password,
-        });
-        setSuccessMessage("Autentificare reusita");
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/employees/login`,
+          {
+            employeeId: inputs.employeeId,
+            name: inputs.name,
+            password: inputs.password,
+          }
+        );
+
+        sessionStorage.setItem("loggedEmployee", inputs.employeeId);
+
+        navigate(`/employee/${inputs.employeeId}`);
+        setSuccessMessage(TEXTS.EMPLOYEE_AUTH.LOGIN_SUCCESS);
       } else {
-        const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/employees/register`, {
-          email: inputs.email,
-          name: inputs.name,
-          password: inputs.password,
-        });
-        setSuccessMessage(`Noteaza-ti ID-ul de Angajat!\nID Angajat: ${res.data.employeeId}`);
+        const res = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/employees/register`,
+          {
+            email: inputs.email,
+            name: inputs.name,
+            password: inputs.password,
+          }
+        );
+        setSuccessMessage(
+          `${TEXTS.EMPLOYEE_AUTH.REGISTER_SUCCESS}\nID: ${res.data.employeeId}`
+        );
       }
     } catch (err) {
-      setErrors({ ...errors, form: "Eroare la autentificare sau crearea contului" });
+      setErrors({ ...errors, form: TEXTS.EMPLOYEE_AUTH.GENERAL_ERROR });
       setTimeout(() => {
         setErrors((prev) => ({ ...prev, form: "" }));
       }, 3000);
@@ -94,7 +110,7 @@ function EmployeeAuthForm() {
               setAdminError("");
             }}
           >
-            Login
+            {TEXTS.EMPLOYEE_AUTH.LOGIN}
           </button>
           <button
             className={mode === "register" ? "active" : ""}
@@ -106,7 +122,7 @@ function EmployeeAuthForm() {
               setAdminError("");
             }}
           >
-            Register
+            {TEXTS.EMPLOYEE_AUTH.REGISTER}
           </button>
         </div>
 
@@ -116,48 +132,48 @@ function EmployeeAuthForm() {
 
           {mode === "register" && !isAuthorized ? (
             <>
-              <label>Parola Admin</label>
+              <label>{TEXTS.EMPLOYEE_AUTH.ADMIN_PASSWORD}</label>
               {adminError && <div className="error">{adminError}</div>}
               <input
                 type="password"
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder="Parola Admin"
+                placeholder={TEXTS.EMPLOYEE_AUTH.ADMIN_PASSWORD}
               />
               <button
                 type="button"
                 className="send-button"
                 onClick={async () => {
-                    try {
-                        const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/employees/check-admin-password`, {
-                        password: adminPassword
-                        });
-                        if (res.data.accessGranted) {
-                        setIsAuthorized(true);
-                        setAdminError("");
-                        } else {
-                        setAdminError("Parola Admin incorecta");
-                        }
-                    } catch (error) {
-                        console.error("Eroare la verificare:", error);
-                        setAdminError("Eroare la verificare");
+                  try {
+                    const res = await axios.post(
+                      `${import.meta.env.VITE_BACKEND_URL}/api/employees/check-admin-password`,
+                      { password: adminPassword }
+                    );
+                    if (res.data.accessGranted) {
+                      setIsAuthorized(true);
+                      setAdminError("");
+                    } else {
+                      setAdminError(TEXTS.EMPLOYEE_AUTH.ADMIN_WRONG);
                     }
+                  } catch {
+                    setAdminError(TEXTS.EMPLOYEE_AUTH.ADMIN_ERROR);
+                  }
                 }}
               >
-                Verifica Parola
+                {TEXTS.EMPLOYEE_AUTH.CHECK_ADMIN}
               </button>
             </>
           ) : (
             <>
               {mode === "register" && (
                 <>
-                  <label>Email</label>
+                  <label>{TEXTS.EMPLOYEE_AUTH.EMAIL}</label>
                   {errors.email && <div className="error">{errors.email}</div>}
                   <input
                     name="email"
                     value={inputs.email}
                     onChange={handleChange}
-                    placeholder="ex: user@mail.com"
+                    placeholder={TEXTS.EMPLOYEE_AUTH.EMAIL_PLACEHOLDER}
                     type="email"
                   />
                 </>
@@ -165,38 +181,40 @@ function EmployeeAuthForm() {
 
               {mode === "login" && (
                 <>
-                  <label>ID Angajat</label>
+                  <label>{TEXTS.EMPLOYEE_AUTH.EMPLOYEE_ID}</label>
                   {errors.employeeId && <div className="error">{errors.employeeId}</div>}
                   <input
                     name="employeeId"
                     value={inputs.employeeId}
                     onChange={handleChange}
-                    placeholder="ex: 123456"
+                    placeholder={TEXTS.EMPLOYEE_AUTH.EMPLOYEE_ID_PLACEHOLDER}
                   />
                 </>
               )}
 
-              <label>Nume</label>
+              <label>{TEXTS.EMPLOYEE_AUTH.NAME}</label>
               {errors.name && <div className="error">{errors.name}</div>}
               <input
                 name="name"
                 value={inputs.name}
                 onChange={handleChange}
-                placeholder="ex: Ion Popescu"
+                placeholder={TEXTS.EMPLOYEE_AUTH.NAME_PLACEHOLDER}
               />
 
-              <label>Parola</label>
+              <label>{TEXTS.EMPLOYEE_AUTH.PASSWORD}</label>
               {errors.password && <div className="error">{errors.password}</div>}
               <input
                 name="password"
                 type="password"
                 value={inputs.password}
                 onChange={handleChange}
-                placeholder="Parola"
+                placeholder={TEXTS.EMPLOYEE_AUTH.PASSWORD}
               />
 
               <button className="send-button">
-                {mode === "login" ? "Autentificare" : "Creeaza cont"}
+                {mode === "login"
+                  ? TEXTS.EMPLOYEE_AUTH.LOGIN_BTN
+                  : TEXTS.EMPLOYEE_AUTH.REGISTER_BTN}
               </button>
             </>
           )}

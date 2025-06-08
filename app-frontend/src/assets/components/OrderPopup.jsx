@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { TEXTS } from '../data/texts';
 import '../styles/OrderPopup.css';
 
 function OrderPopup({ show, setShow, timeLeft }) {
@@ -73,7 +74,7 @@ function OrderPopup({ show, setShow, timeLeft }) {
         sessionStorage.setItem(key, expireTime);
         window.dispatchEvent(new CustomEvent('buzzUpdated'));
       })
-      .catch(() => alert('A aparut o eroare la chemarea chelnerului.'));
+      .catch(() => alert(TEXTS.ORDER_POPUP.ERROR_CALL_WAITER));
   };
 
   if (!show || location.pathname.includes('/payment')) return null;
@@ -82,7 +83,7 @@ function OrderPopup({ show, setShow, timeLeft }) {
     <div className={`order-popup ${isMinimized ? 'minimized' : ''}`}>
       <div className="popup-content">
         <div className="popup-header">
-          <h4 className="popup-title">Comanda Ta</h4>
+          <h4 className="popup-title">{TEXTS.ORDER_POPUP.TITLE}</h4>
           <button className="btn-minimize" onClick={() => setIsMinimized(!isMinimized)}>
             {isMinimized ? '🔼' : '🔽'}
           </button>
@@ -93,22 +94,25 @@ function OrderPopup({ show, setShow, timeLeft }) {
             <div className="popup-timer">
               {secondsLeft > 0 ? (
                 <>
-                  Timp de asteptare: <strong>{formatTime(secondsLeft)}</strong>
+                  {TEXTS.ORDER_POPUP.TIME_LABEL} <strong>{formatTime(secondsLeft)}</strong>
                 </>
               ) : (
-                <span className="order-completed-text">Comanda este pe drum</span>
+                <span className="order-completed-text">{TEXTS.ORDER_POPUP.ORDER_COMPLETE}</span>
               )}
             </div>
 
             <div className="popup-buttons">
               <button className="btn-call" onClick={callWaiter} disabled={isWaiterCalled}>
-                {isWaiterCalled ? 'Chelner chemat' : 'Cheama Chelner'}
+                {isWaiterCalled ? TEXTS.ORDER_POPUP.CALLED : TEXTS.ORDER_POPUP.CALL}
               </button>
-              <button className="btn-pay" onClick={() => {
-                const masa = sessionStorage.getItem("masaCurenta");
-                navigate(`/payment?tableNumber=${masa}`);
-              }}>
-                Plateste
+              <button
+                className="btn-pay"
+                onClick={() => {
+                  const masa = sessionStorage.getItem("masaCurenta");
+                  navigate(`/payment?tableNumber=${masa}`);
+                }}
+              >
+                {TEXTS.ORDER_POPUP.PAY}
               </button>
             </div>
           </>

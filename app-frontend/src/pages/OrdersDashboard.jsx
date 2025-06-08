@@ -1,13 +1,31 @@
 import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { TEXTS } from '../assets/data/texts';
 import "../assets/styles/OrdersDashboard.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://smashly-backend.onrender.com';
 
 function OrdersDashboard() {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [ordersByTable, setOrdersByTable] = useState({});
   const [buzzState, setBuzzState] = useState({});
   const [expandedTables, setExpandedTables] = useState({});
+
+  useEffect(() => {
+    fetchOrders();
+    refreshBuzzState();
+
+    const handler = () => refreshBuzzState();
+    window.addEventListener("buzzUpdated", handler);
+    const interval = setInterval(refreshBuzzState, 5000);
+
+    return () => {
+      window.removeEventListener("buzzUpdated", handler);
+      clearInterval(interval);
+    };
+  }, []);
 
   const fetchOrders = async () => {
     const data = {};
@@ -16,7 +34,7 @@ function OrdersDashboard() {
         const response = await axios.get(`${API_BASE}/orders/${i}`);
         data[i] = response.data.orders || [];
       } catch (error) {
-        console.error(`Error for table ${i}:`, error);
+        console.error(`${TEXTS.DASHBOARD.FETCH_ERROR} ${i}:`, error);
         data[i] = [];
       }
     }
@@ -44,45 +62,34 @@ function OrdersDashboard() {
         const expireAt = parseInt(sessionStorage.getItem(tableKey), 10);
         const newExpireAt = Math.max(Date.now(), expireAt - secondsReduced * 1000);
         sessionStorage.setItem(tableKey, newExpireAt);
-
-
-        if (isLast) {
-          window.dispatchEvent(new Event("popupTimeUpdated"));
-        }
-
         window.dispatchEvent(new Event("popupTimeUpdated"));
       }
 
       fetchOrders();
     } catch (error) {
-      console.error('Error updating order:', error);
+      console.error(TEXTS.DASHBOARD.UPDATE_ERROR, error);
     }
   };
 
   const toggleExpand = (table) => {
-    setExpandedTables(prev => ({ ...prev, [table]: !prev[table] }));
+    setExpandedTables((prev) => ({ ...prev, [table]: !prev[table] }));
   };
-
-  useEffect(() => {
-    fetchOrders();
-    refreshBuzzState();
-
-    const handler = () => {
-      refreshBuzzState();
-    };
-
-    window.addEventListener("buzzUpdated", handler);
-    const interval = setInterval(refreshBuzzState, 5000);
-
-    return () => {
-      window.removeEventListener("buzzUpdated", handler);
-      clearInterval(interval);
-    };
-  }, []);
 
   return (
     <div className="orders-dashboard">
-      <h2 className="orders-title">Comenzi Active</h2>
+      <div className="orders-header">
+        <h2 className="orders-title">{TEXTS.DASHBOARD.TITLE}</h2>
+        <button
+          className="logout-button"
+          onClick={() => {
+            sessionStorage.removeItem("loggedEmployee");
+            navigate("/login");
+          }}
+        >
+          Delogare
+        </button>
+      </div>
+
       <div className="table-list">
         {Array.from({ length: 8 }, (_, index) => {
           const tableNumber = index + 1;
@@ -93,8 +100,8 @@ function OrdersDashboard() {
             <div key={tableNumber} className="table-card">
               <div className="table-header" onClick={() => toggleExpand(tableNumber)}>
                 <span className="table-title">
-                  Masa #{tableNumber} - {orders.length} comenzi active
-                  {buzzState[tableNumber] && <span className="buzz-badge"> BUZZ</span>}
+                  {TEXTS.DASHBOARD.TABLE_LABEL} #{tableNumber} - {orders.length} {TEXTS.DASHBOARD.ACTIVE_ORDERS}
+                  {buzzState[tableNumber] && <span className="buzz-badge"> {TEXTS.DASHBOARD.BUZZ}</span>}
                 </span>
                 <span className="arrow">{isExpanded ? '▲' : '▼'}</span>
               </div>
@@ -102,24 +109,24 @@ function OrdersDashboard() {
               {isExpanded && (
                 <div className="table-orders">
                   {orders.length === 0 ? (
-                    <p>Nu sunt comenzi pentru aceasta masa.</p>
+                    <p>{TEXTS.DASHBOARD.NO_ORDERS}</p>
                   ) : (
                     orders.map(order => (
                       <div key={order._id} className="order-card">
-                        <h5>Comanda #{order._id.slice(-6)}</h5>
-                        <p><strong>Ora:</strong> {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
-                        <p><strong>Status:</strong> <span className="order-status">{order.status}</span></p>
-                        <p><strong>Total:</strong> {order.totalAmount} RON</p>
+                        <h5>{TEXTS.DASHBOARD.ORDER} #{order._id.slice(-6)}</h5>
+                        <p><strong>{TEXTS.DASHBOARD.TIME}:</strong> {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        <p><strong>{TEXTS.DASHBOARD.STATUS}:</strong> <span className="order-status">{order.status}</span></p>
+                        <p><strong>{TEXTS.DASHBOARD.TOTAL}:</strong> {order.totalAmount} {TEXTS.GENERAL.CURRENCY}</p>
                         <ul>
                           {order.products.map((item, idx) => (
-                            <li key={idx}>{item.name} - {item.price} RON</li>
+                            <li key={idx}>{item.name} - {item.price} {TEXTS.GENERAL.CURRENCY}</li>
                           ))}
                         </ul>
                         <button
                           className="btn-delivered"
                           onClick={() => handleOrderDelivered(order._id, 'livrat', order.tableNumber)}
                         >
-                          Marcheaza ca livrat
+                          {TEXTS.DASHBOARD.MARK_DELIVERED}
                         </button>
                       </div>
                     ))

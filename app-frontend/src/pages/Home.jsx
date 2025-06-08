@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { TEXTS } from '../assets/data/texts';
 import "../assets/styles/Home.css";
 import menuData from "../assets/data/menuData";
 
@@ -36,7 +37,7 @@ function Home() {
 
   return (
     <div className="hero-section">
-      <h1 className="hero-title">GATIT PROASPAT, PE LOC!</h1>
+      <h1 className="hero-title">{TEXTS.HOME.TITLE}</h1>
 
       <div className="burger-mobile-container d-lg-none">
         {burgers.map((burger, index) => (
@@ -55,7 +56,7 @@ function Home() {
         />
       </picture>
 
-      <Link to={menuPath} className="home-menu-button">Meniu</Link>
+      <Link to={menuPath} className="home-menu-button">{TEXTS.HOME.MENU_BUTTON}</Link>
     </div>
   );
 }

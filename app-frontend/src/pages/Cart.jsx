@@ -1,6 +1,7 @@
 import { useCart } from '../assets/components/CartContext';
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { TEXTS } from '../assets/data/texts';
 import '../assets/styles/Cart.css';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://smashly-backend.onrender.com/api';
@@ -71,15 +72,15 @@ function Cart({ setShowPopup, setTimeLeft }) {
 
       setCart([]);
       setNotes([]);
-      displayPopupMessage('Comanda a fost trimisa cu succes!');
+      displayPopupMessage(TEXTS.CART.ORDER_SUCCESS);
       setShowPopup(true);
       setTimeLeft(data.order.estimatedTime * 60);
       window.dispatchEvent(new CustomEvent('popupTimeUpdated'));
 
       navigate(getRedirectPath('/cart'));
     } catch (error) {
-      console.error('Error submitting order:', error);
-      displayPopupMessage('Eroare la trimiterea comenzii.');
+      console.error(TEXTS.CART.ORDER_ERROR, error);
+      displayPopupMessage(TEXTS.CART.ORDER_ERROR);
     }
   };
 
@@ -88,11 +89,11 @@ function Cart({ setShowPopup, setTimeLeft }) {
   return (
     <div className="cart-background">
       <div className="cart-container">
-        <h2 className="cart-title">COSUL TAU</h2>
+        <h2 className="cart-title">{TEXTS.CART.TITLE}</h2>
 
         {cart.length === 0 ? (
           <div className="cart-empty">
-            <p>Cosul este gol.</p>
+            <p>{TEXTS.CART.EMPTY}</p>
           </div>
         ) : (
           <>
@@ -109,12 +110,12 @@ function Cart({ setShowPopup, setTimeLeft }) {
                   <div className="product-details-column">
                     <div className="product-header">
                       <h5 className="product-name">{product.name}</h5>
-                      <span className="product-price">{product.price} RON</span>
+                      <span className="product-price">{product.price} {TEXTS.GENERAL.CURRENCY}</span>
                     </div>
                     <input
                       type="text"
                       className="product-note-input"
-                      placeholder="Specificatii..."
+                      placeholder={TEXTS.CART.NOTE_PLACEHOLDER}
                       maxLength={30}
                       value={notes[index] || ''}
                       onChange={(e) => handleNoteChange(index, e.target.value)}
@@ -122,21 +123,21 @@ function Cart({ setShowPopup, setTimeLeft }) {
                   </div>
                   <div className="product-remove-column">
                     <button className="remove-button" onClick={() => removeItemFromCart(index)}>
-                      Sterge
+                      {TEXTS.CART.REMOVE}
                     </button>
                   </div>
                 </div>
               </div>
             ))}
 
-            <div className="total-section">Total: {total} RON</div>
+            <div className="total-section">{TEXTS.CART.TOTAL}: {total} {TEXTS.GENERAL.CURRENCY}</div>
 
             <div className="table-number-section">
-              <label className="table-label">Numar masa:</label>
+              <label className="table-label">{TEXTS.CART.TABLE_NUMBER}</label>
               <input
                 type="text"
                 className="table-input"
-                placeholder="ex: 4"
+                placeholder={TEXTS.CART.TABLE_PLACEHOLDER}
                 value={tableNumber}
                 onChange={(e) => {
                   if (!sessionStorage.getItem('masaCurenta')) {
@@ -149,7 +150,7 @@ function Cart({ setShowPopup, setTimeLeft }) {
 
             <div className="submit-section">
               <button className="submit-button" onClick={submitOrder}>
-                Plaseaza comanda
+                {TEXTS.CART.SUBMIT}
               </button>
             </div>
           </>

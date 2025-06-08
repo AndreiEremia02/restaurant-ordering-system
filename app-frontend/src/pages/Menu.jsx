@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../assets/components/CartContext';
 import rawMenuData from '../assets/data/menuData';
+import { TEXTS } from '../assets/data/texts';
 import '../assets/styles/Menu.css';
 
 function Menu() {
@@ -34,7 +35,7 @@ function Menu() {
         image: product.image
       });
     }
-    setPopupMessage(`"${product.name}" a fost adaugat in cart!`);
+    setPopupMessage(`"${product.name}" ${TEXTS.MENU.ADDED_TO_CART}`);
     setTimeout(() => setPopupMessage(''), 2000);
   };
 
@@ -52,7 +53,7 @@ function Menu() {
 
   return (
     <div className="menu-container">
-      <h2 className="menu-title">MENIU</h2>
+      <h2 className="menu-title">{TEXTS.MENU.TITLE}</h2>
 
       {menuData.map((cat, index) => (
         <div key={cat.category} className="menu-section mb-4">
@@ -63,7 +64,7 @@ function Menu() {
                 <img src={product.image} alt={product.name} className="menu-img" />
                 <div className="menu-info" onClick={(e) => e.stopPropagation()}>
                   <h5 className="menu-name">{product.name.toUpperCase()}</h5>
-                  <p className="menu-price">{product.price} RON</p>
+                  <p className="menu-price">{product.price} {TEXTS.GENERAL.CURRENCY}</p>
                   {!clientType && (
                     <div className="menu-actions">
                       <input
@@ -74,7 +75,7 @@ function Menu() {
                         className="menu-qty"
                       />
                       <button className="menu-btn" onClick={() => handleAddToCart(product)}>
-                        ADAUGA IN COS
+                        {TEXTS.MENU.ADD_TO_CART}
                       </button>
                     </div>
                   )}
@@ -92,7 +93,7 @@ function Menu() {
             <img src={selectedProduct.image} alt={selectedProduct.name} className="popup-img" />
             <h3>{selectedProduct.name}</h3>
             <p>{selectedProduct.description}</p>
-            <p className="popup-price">{selectedProduct.price} RON</p>
+            <p className="popup-price">{selectedProduct.price} {TEXTS.GENERAL.CURRENCY}</p>
             {!clientType && (
               <div className="popup-actions">
                 <input
@@ -103,7 +104,7 @@ function Menu() {
                   className="menu-qty"
                 />
                 <button className="menu-btn" onClick={handleAddFromPopup}>
-                  ADAUGA IN COS
+                  {TEXTS.MENU.ADD_TO_CART}
                 </button>
               </div>
             )}

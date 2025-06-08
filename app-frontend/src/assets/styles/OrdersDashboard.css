@@ -13,6 +13,28 @@
   margin-bottom: 2rem;
 }
 
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.logout-button {
+  background-color: #dc3545;
+  font-family: 'Luckiest Guy', cursive;
+  color: white;
+  padding: 0.4rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background-color: #bb2d3b;
+}
+
 .table-list {
   display: flex;
   flex-direction: column;

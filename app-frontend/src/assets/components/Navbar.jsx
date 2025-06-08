@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
+import { TEXTS } from '../data/texts';
 import '../../assets/styles/Navbar.css';
 
 const logo = `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/images/brand-logo.png`;
@@ -37,13 +38,19 @@ function Navbar({ isAtTable, isEmployee }) {
       return (
         <>
           <li className="nav-item">
-            <Link className="nav-link" to={`/menu${suffix}`} onClick={closeMenu}>Meniu</Link>
+            <Link className="nav-link" to={`/menu${suffix}`} onClick={closeMenu}>
+              {TEXTS.NAVBAR.MENU}
+            </Link>
           </li>
           <li className="nav-item">
-            <Link className="nav-link" to={`/cart${suffix}`} onClick={closeMenu}>Cos</Link>
+            <Link className="nav-link" to={`/cart${suffix}`} onClick={closeMenu}>
+              {TEXTS.NAVBAR.CART}
+            </Link>
           </li>
           <li className="nav-item">
-            <Link className="nav-link" to={`/payment${suffix}`} onClick={closeMenu}>Plata</Link>
+            <Link className="nav-link" to={`/payment${suffix}`} onClick={closeMenu}>
+              {TEXTS.NAVBAR.PAYMENT}
+            </Link>
           </li>
         </>
       );
@@ -59,11 +66,11 @@ function Navbar({ isAtTable, isEmployee }) {
       <div className="container-fluid">
         {isEmployee ? (
           <span className="navbar-brand d-lg-none">
-            <img src={logo} alt="SMASHLY Logo" className="navbar-logo-img" />
+            <img src={logo} alt={TEXTS.NAVBAR.LOGO_ALT} className="navbar-logo-img" />
           </span>
         ) : (
           <Link to={`/home${suffix}`} className="navbar-brand d-lg-none" onClick={closeMenu}>
-            <img src={logo} alt="SMASHLY Logo" className="navbar-logo-img" />
+            <img src={logo} alt={TEXTS.NAVBAR.LOGO_ALT} className="navbar-logo-img" />
           </Link>
         )}
 
@@ -75,7 +82,7 @@ function Navbar({ isAtTable, isEmployee }) {
             data-bs-target="#navbarNav"
             aria-controls="navbarNav"
             aria-expanded="false"
-            aria-label="Toggle navigation"
+            aria-label={TEXTS.NAVBAR.TOGGLE}
           >
             <span className="navbar-toggler-icon"></span>
           </button>
@@ -88,11 +95,11 @@ function Navbar({ isAtTable, isEmployee }) {
         >
           {isEmployee ? (
             <span className="navbar-brand d-none d-lg-block mb-2">
-              <img src={logo} alt="SMASHLY Logo" className="navbar-logo-img" />
+              <img src={logo} alt={TEXTS.NAVBAR.LOGO_ALT} className="navbar-logo-img" />
             </span>
           ) : (
             <Link to={`/home${suffix}`} className="navbar-brand d-none d-lg-block mb-2" onClick={closeMenu}>
-              <img src={logo} alt="SMASHLY Logo" className="navbar-logo-img" />
+              <img src={logo} alt={TEXTS.NAVBAR.LOGO_ALT} className="navbar-logo-img" />
             </Link>
           )}
 
