@@ -24,12 +24,14 @@ function Payment() {
     const savedTable = sessionStorage.getItem('masaCurenta');
     if (savedTable) {
       setTableId(savedTable);
+      fetchOrders(savedTable);
     } else {
       const params = new URLSearchParams(window.location.search);
       const queryTable = params.get("tableNumber");
       if (queryTable) {
         setTableId(queryTable);
         sessionStorage.setItem("masaCurenta", queryTable);
+        fetchOrders(queryTable);
       }
     }
   }, []);
@@ -41,10 +43,10 @@ function Payment() {
     }
   }, [confirmed, method]);
 
-  const fetchOrders = () => {
-    if (!tableId) return;
+  const fetchOrders = (table) => {
+    if (!table) return;
     axios
-      .get(`${API_BASE}/api/orders/${tableId}`)
+      .get(`${API_BASE}/api/orders/${table}`)
       .then((res) => setOrders(res.data.orders.filter((o) => o.status !== 'platita')))
       .catch(() => setOrders([]));
   };
@@ -155,31 +157,13 @@ function Payment() {
       <div className="container payment-page">
         <h2 className="payment-title">{TEXTS.PAYMENT.TITLE}</h2>
 
-        <div className="row justify-content-center mb-4">
-          <div className="col-md-6">
-            <label>{TEXTS.PAYMENT.TABLE_NUMBER}</label>
-            <input
-              type="number"
-              className="form-control"
-              value={tableId}
-              onChange={(e) => {
-                if (!sessionStorage.getItem('masaCurenta')) {
-                  setTableId(e.target.value);
-                }
-              }}
-              readOnly={!!sessionStorage.getItem('masaCurenta')}
-            />
-            <button className="btn btn-primary mt-2 w-100" onClick={fetchOrders}>
-              {TEXTS.PAYMENT.SEE_ORDERS}
-            </button>
-          </div>
-        </div>
-
         {orders.length > 0 && (
           <div className="row justify-content-center">
             <div className="col-md-8">
               <div className="payment-card mb-4 shadow-sm p-4">
                 <div className="card-body">
+                  <div className="table-display">MASA {tableId}</div>
+
                   <h5 className="mb-3 card-title">{TEXTS.PAYMENT.ORDERS}</h5>
                   {orders.map((o, i) => (
                     <p key={i}>{TEXTS.PAYMENT.ORDER_LABEL} #{o._id.slice(-6)}: {o.totalAmount} {TEXTS.GENERAL.CURRENCY}</p>

@@ -26,6 +26,24 @@
   margin-top: 2rem;
 }
 
+.cart-table-display {
+  display: inline-block;
+  background-color: #000;
+  color: #fff;
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 0.9rem;
+  padding: 0.4rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  margin-left: 5px;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.3);
+  text-shadow: 1px 1px #000;
+}
+
+.table-display:hover {
+  transform: translateY(-3px);
+}
+
 .product-card {
   background-color: white;
   border-radius: 20px;
@@ -108,26 +126,6 @@
   font-weight: bold;
   font-size: 1.5rem;
   margin-top: 1rem;
-}
-
-.table-number-section {
-  margin-top: 2rem;
-}
-
-.table-label {
-  font-weight: bold;
-  font-size: 1rem;
-}
-
-.table-input {
-  display: block;
-  width: 250px;
-  max-width: 100%;
-  padding: 8px 12px;
-  margin-top: 5px;
-  font-size: 0.95rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
 }
 
 .submit-section {

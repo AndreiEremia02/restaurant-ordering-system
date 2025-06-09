@@ -32,7 +32,7 @@ function OrderPopup({ show, setShow, timeLeft }) {
     } else if (stillActive && expireAt > Date.now()) {
       setShow(true);
     }
-  }, [location.pathname, popupExpireKey, popupActiveKey]);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!show) return;
@@ -49,14 +49,40 @@ function OrderPopup({ show, setShow, timeLeft }) {
 
   useEffect(() => {
     const handlePopupUpdate = () => {
-      const newExpire = parseInt(sessionStorage.getItem(popupExpireKey), 10);
-      const remaining = Math.max(0, Math.floor((newExpire - Date.now()) / 1000));
-      setSecondsLeft(remaining);
+      updatePopupTimer();
     };
 
     window.addEventListener('popupTimeUpdated', handlePopupUpdate);
     return () => window.removeEventListener('popupTimeUpdated', handlePopupUpdate);
-  }, [popupExpireKey]);
+  }, []);
+
+  const updatePopupTimer = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/orders/${tableNumber}`);
+      const orders = res.data.orders;
+
+      const now = Date.now();
+
+      let totalRemainingSeconds = 0;
+
+      for (let order of orders) {
+        if (order.status !== 'livrat' && order.estimatedTime) {
+          const createdAt = new Date(order.createdAt).getTime();
+          const expireAt = createdAt + order.estimatedTime * 60000;
+          const remaining = Math.floor((expireAt - now) / 1000);
+          totalRemainingSeconds += remaining > 0 ? remaining : 0;
+        }
+      }
+
+      const newExpire = now + totalRemainingSeconds * 1000;
+      sessionStorage.setItem(popupExpireKey, newExpire.toString());
+      sessionStorage.setItem(popupActiveKey, 'true');
+
+      setSecondsLeft(totalRemainingSeconds);
+    } catch (err) {
+      console.error('Eroare la actualizarea timpului', err);
+    }
+  };
 
   const formatTime = (sec) => {
     const minutes = Math.floor(sec / 60).toString().padStart(2, '0');
