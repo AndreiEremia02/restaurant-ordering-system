@@ -39,7 +39,7 @@ const menuData = [
       },
       {
         id: "burgers-5",
-        name: "In & Out Burger",
+        name: "In & Out Style Double Burger",
         image: "/images/burgers/in-out-cheese.png",
         description: "Burger cu doua tipuri de branza si carne suculenta",
         price: 23,

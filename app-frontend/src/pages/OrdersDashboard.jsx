@@ -19,27 +19,34 @@ function OrdersDashboard() {
     fetchOrders();
     refreshBuzzState();
 
-    const handler = () => refreshBuzzState();
-    window.addEventListener('buzzUpdated', handler);
-    const interval = setInterval(refreshBuzzState, 5000);
+    const buzzHandler = () => refreshBuzzState();
+    window.addEventListener('buzzUpdated', buzzHandler);
+
+    const buzzInterval = setInterval(refreshBuzzState, 5000);
+    const orderInterval = setInterval(fetchOrders, 3000);
 
     return () => {
-      window.removeEventListener('buzzUpdated', handler);
-      clearInterval(interval);
+      window.removeEventListener('buzzUpdated', buzzHandler);
+      clearInterval(buzzInterval);
+      clearInterval(orderInterval);
     };
   }, []);
 
   const fetchOrders = async () => {
-    const data = {};
+    const newData = {};
     for (let i = 1; i <= 8; i++) {
       try {
         const response = await axios.get(`${API_BASE}/api/orders/${i}`);
-        data[i] = response.data.orders || [];
+        newData[i] = response.data.orders || [];
       } catch (error) {
-        data[i] = [];
+        newData[i] = [];
       }
     }
-    setOrdersByTable(data);
+
+    const dataChanged = JSON.stringify(newData) !== JSON.stringify(ordersByTable);
+    if (dataChanged) {
+      setOrdersByTable(newData);
+    }
   };
 
   const refreshBuzzState = () => {
@@ -144,9 +151,15 @@ function OrdersDashboard() {
                         <p><strong>{TEXTS.DASHBOARD.STATUS}:</strong> <span className="order-status">{order.status}</span></p>
                         <p><strong>{TEXTS.DASHBOARD.TOTAL}:</strong> {order.totalAmount} {TEXTS.GENERAL.CURRENCY}</p>
                         <ul>
-                          {order.products.map((item, idx) => (
-                            <li key={idx}>{item.name} - {item.price} {TEXTS.GENERAL.CURRENCY}</li>
-                          ))}
+                          {order.products.map((item, idx) => {
+                            const noteArray = order.notes?.split(';') || [];
+                            const productNote = noteArray[idx]?.trim();
+                            return (
+                              <li key={idx}>
+                                {item.name} {productNote ? `(${productNote})` : ''} - {item.price} {TEXTS.GENERAL.CURRENCY}
+                              </li>
+                            );
+                          })}
                         </ul>
                         <button
                           className="btn-delivered"
