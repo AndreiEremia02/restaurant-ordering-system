@@ -9,9 +9,10 @@ function generateEmployeeId() {
 
 router.post('/register', async (req, res) => {
   const { email, name, password } = req.body;
+
   try {
     const existing = await Employee.findOne({ email });
-    if (existing) return res.status(400).json({ error: 'Email already exists' });
+    if (existing) return res.status(400).json({ mesaj: 'Email deja inregistrat' });
 
     let employeeId;
     let idExists = true;
@@ -24,33 +25,36 @@ router.post('/register', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10);
     const employee = new Employee({ employeeId, email, name, passwordHash });
     await employee.save();
+
     res.json({ employeeId });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ mesaj: 'Eroare de server' });
   }
 });
 
 router.post('/login', async (req, res) => {
   const { employeeId, name, password } = req.body;
+
   try {
     const employee = await Employee.findOne({ employeeId, name });
-    if (!employee) return res.status(400).json({ error: 'Invalid credentials' });
+    if (!employee) return res.status(400).json({ mesaj: 'Date de autentificare invalide' });
 
     const valid = await bcrypt.compare(password, employee.passwordHash);
-    if (!valid) return res.status(400).json({ error: 'Invalid credentials' });
+    if (!valid) return res.status(400).json({ mesaj: 'Date de autentificare invalide' });
 
-    res.json({ message: 'Login successful' });
+    res.json({ mesaj: 'Autentificare reusita' });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ mesaj: 'Eroare de server' });
   }
 });
 
 router.post('/check-admin-password', (req, res) => {
   const { password } = req.body;
+
   if (password === process.env.ADMIN_PASSWORD) {
-    res.json({ accessGranted: true });
+    res.json({ accesPermis: true });
   } else {
-    res.status(401).json({ accessGranted: false });
+    res.status(401).json({ accesPermis: false });
   }
 });
 

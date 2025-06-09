@@ -12,8 +12,6 @@ export const TEXTS = {
     BACK_TO_RESTAURANT: "Intoarce-te pe pagina restaurantului",
     PAYMENT_SUCCESS: "Plata efectuata cu succes",
     TITLE: "Plata comanda",
-    TABLE_NUMBER: "Numar masa:",
-    SEE_ORDERS: "Vezi comenzile",
     ORDERS: "Comenzi:",
     ORDER_LABEL: "Comanda",
     TABLE_TOTAL: "Total masa",
@@ -41,7 +39,9 @@ export const TEXTS = {
     TOTAL: "Total",
     MARK_DELIVERED: "Marcheaza ca livrat",
     FETCH_ERROR: "Eroare la preluarea comenzilor pentru masa",
-    UPDATE_ERROR: "Eroare la actualizarea comenzii:"
+    UPDATE_ERROR: "Eroare la actualizarea comenzii:",
+    DELETE_CONFIRMATION : "Confirmi stergerea comenzii cu ID",
+    LOGOUT_BUTTON: "Delogare"
   },
    MENU: {
     TITLE: "MENIU",
@@ -58,8 +58,7 @@ export const TEXTS = {
     NOTE_PLACEHOLDER: "Specificatii...",
     REMOVE: "Sterge",
     TOTAL: "Total",
-    TABLE_NUMBER: "Numar masa:",
-    TABLE_PLACEHOLDER: "ex: 4",
+    TABLE_LABEL: "Masa",
     SUBMIT: "Plaseaza comanda",
     ORDER_SUCCESS: "Comanda a fost trimisa cu succes!",
     ORDER_ERROR: "Eroare la trimiterea comenzii."

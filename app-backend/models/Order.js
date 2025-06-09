@@ -26,7 +26,7 @@ const OrderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: 'In asteptare'
+    default: 'activa'
   },
   estimatedTime: {
     type: Number,

@@ -9,7 +9,7 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'https://smashly-backend.onren
 function Cart({ setShowPopup, setTimeLeft }) {
   const { cart, setCart } = useCart();
   const [notes, setNotes] = useState(Array(cart.length).fill(''));
-  const [tableNumber, setTableNumber] = useState(sessionStorage.getItem('masaCurenta') || '');
+  const tableNumber = sessionStorage.getItem('masaCurenta') || '';
   const [popupMessage, setPopupMessage] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,6 +43,23 @@ function Cart({ setShowPopup, setTimeLeft }) {
   };
 
   const submitOrder = async () => {
+    // Verificăm dacă toate produsele din coș conțin ID
+    const productsWithId = cart.map((item) => {
+      return {
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+      };
+    });
+
+    console.log('Trimitem comanda:', {
+      tableNumber,
+      products: productsWithId,
+      totalAmount: total,
+      notes,
+    });
+
     try {
       const response = await fetch(`${API_BASE}/order`, {
         method: 'POST',
@@ -51,7 +68,7 @@ function Cart({ setShowPopup, setTimeLeft }) {
         },
         body: JSON.stringify({
           tableNumber,
-          products: cart,
+          products: productsWithId,
           totalAmount: total,
           notes,
         }),
@@ -75,6 +92,8 @@ function Cart({ setShowPopup, setTimeLeft }) {
       displayPopupMessage(TEXTS.CART.ORDER_SUCCESS);
       setShowPopup(true);
       setTimeLeft(data.order.estimatedTime * 60);
+
+      // 🔔 Actualizează timerul centralizat:
       window.dispatchEvent(new CustomEvent('popupTimeUpdated'));
 
       navigate(getRedirectPath('/cart'));
@@ -83,6 +102,7 @@ function Cart({ setShowPopup, setTimeLeft }) {
       displayPopupMessage(TEXTS.CART.ORDER_ERROR);
     }
   };
+
 
   const total = calculateTotal();
 
@@ -97,6 +117,8 @@ function Cart({ setShowPopup, setTimeLeft }) {
           </div>
         ) : (
           <>
+            <div className="cart-table-display">MASA {tableNumber}</div>
+
             {cart.map((product, index) => (
               <div key={index} className="product-card">
                 <div className="product-row">
@@ -131,22 +153,6 @@ function Cart({ setShowPopup, setTimeLeft }) {
             ))}
 
             <div className="total-section">{TEXTS.CART.TOTAL}: {total} {TEXTS.GENERAL.CURRENCY}</div>
-
-            <div className="table-number-section">
-              <label className="table-label">{TEXTS.CART.TABLE_NUMBER}</label>
-              <input
-                type="text"
-                className="table-input"
-                placeholder={TEXTS.CART.TABLE_PLACEHOLDER}
-                value={tableNumber}
-                onChange={(e) => {
-                  if (!sessionStorage.getItem('masaCurenta')) {
-                    setTableNumber(e.target.value);
-                  }
-                }}
-                readOnly={!!sessionStorage.getItem('masaCurenta')}
-              />
-            </div>
 
             <div className="submit-section">
               <button className="submit-button" onClick={submitOrder}>
