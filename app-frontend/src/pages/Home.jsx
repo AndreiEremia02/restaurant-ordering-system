@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { TEXTS } from '../assets/data/texts';
 import "../assets/styles/Home.css";
@@ -6,32 +6,33 @@ import menuData from "../assets/data/menuData";
 
 function Home() {
   const location = useLocation();
-  const navigate = useNavigate();
+  const [menuPath, setMenuPath] = useState("");
 
   useEffect(() => {
     if (location.pathname.includes("/online-customer")) {
       sessionStorage.removeItem("masaCurenta");
+      setMenuPath("/menu/online-customer");
     } else {
       const params = new URLSearchParams(window.location.search);
       const hash = window.location.hash;
 
-      if (!sessionStorage.getItem('masaCurenta')) {
-        if (params.has('tableNumber')) {
-          const numberFromQuery = params.get('tableNumber');
-          sessionStorage.setItem('masaCurenta', numberFromQuery);
-        } else if (hash.includes('#')) {
+      let table = sessionStorage.getItem("masaCurenta");
+      if (!table) {
+        if (params.has("tableNumber")) {
+          table = params.get("tableNumber");
+          sessionStorage.setItem("masaCurenta", table);
+        } else if (hash.includes("#")) {
           const match = hash.match(/#(\d+)/);
           if (match) {
-            sessionStorage.setItem('masaCurenta', match[1]);
+            table = match[1];
+            sessionStorage.setItem("masaCurenta", table);
           }
         }
       }
+
+      setMenuPath(table ? `/menu?tableNumber=${table}` : "/menu");
     }
   }, [location.pathname]);
-
-  const isOnlineCustomer = location.pathname.includes("/online-customer");
-  const masaCurenta = sessionStorage.getItem("masaCurenta");
-  const menuPath = isOnlineCustomer ? "/menu/online-customer" : `/menu${masaCurenta ? `?tableNumber=${masaCurenta}` : ""}`;
 
   const burgers = menuData.find(cat => cat.category === "Burgers")?.products.slice(0, 3) || [];
 
@@ -56,7 +57,11 @@ function Home() {
         />
       </picture>
 
-      <Link to={menuPath} className="home-menu-button">{TEXTS.HOME.MENU_BUTTON}</Link>
+      {menuPath && (
+        <Link to={menuPath} className="home-menu-button">
+          {TEXTS.HOME.MENU_BUTTON}
+        </Link>
+      )}
     </div>
   );
 }

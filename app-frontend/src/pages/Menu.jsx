@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../assets/components/CartContext';
 import rawMenuData from '../assets/data/menuData';
@@ -9,8 +9,18 @@ function Menu() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [popupMessage, setPopupMessage] = useState('');
   const [quantities, setQuantities] = useState({});
+  const [cartLink, setCartLink] = useState('');
   const { addToCart } = useCart();
   const location = useLocation();
+
+  useEffect(() => {
+    const masa = sessionStorage.getItem("masaCurenta");
+    if (masa) {
+      setCartLink(`/cart?tableNumber=${masa}`);
+    } else {
+      setCartLink("/cart?client=online-customer");
+    }
+  }, []);
 
   const menuData = rawMenuData.map((category, catIndex) => ({
     ...category,
@@ -114,15 +124,8 @@ function Menu() {
 
       {popupMessage && <div className="quick-popup">{popupMessage}</div>}
 
-      {!clientType && (
-        <Link
-          to={
-            sessionStorage.getItem("masaCurenta")
-              ? `/cart?tableNumber=${sessionStorage.getItem("masaCurenta")}`
-              : "/cart?client=online-customer"
-          }
-          className="floating-cart-button"
-        >
+      {!clientType && cartLink && (
+        <Link to={cartLink} className="floating-cart-button">
           <i className="bi bi-cart-fill"></i>
         </Link>
       )}

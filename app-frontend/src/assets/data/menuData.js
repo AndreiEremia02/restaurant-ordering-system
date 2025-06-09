@@ -8,7 +8,7 @@ const menuData = [
       { name: "Chicken Burger", image: `${BASE_URL}/images/burgers/chicken-burger.png`, description: "Burger cu piept de pui crispy", price: 22, time: 7 },
       { name: "Philly CheeseBurger", image: `${BASE_URL}/images/burgers/philly-cheeseburger.png`, description: "Burger cu carne de vita si branza topita", price: 25, time: 9 },
       { name: "Five Guys Burger", image: `${BASE_URL}/images/burgers/fiveguys.png`, description: "Inspirat din reteta americana Five Guys", price: 26, time: 10 },
-      { name: "In & Out Burger", image: `${BASE_URL}/images/burgers/in-out-cheese.png`, description: "Burger cu doua tipuri de branza si carne suculenta", price: 23, time: 9 },
+      { name: "In & Out Style Double Burger", image: `${BASE_URL}/images/burgers/in-out-cheese.png`, description: "Burger cu doua tipuri de branza si carne suculenta", price: 23, time: 9 },
       { name: "CheeseBurger & Fires Menu", image: `${BASE_URL}/images/burgers/cheeseburger-fries-menu.png`, description: "Meniu cu cheeseburger si cartofi", price: 28, time: 10 }
     ]
   },
