@@ -18,7 +18,7 @@ function Payment() {
   const [displaySuccess, setDisplaySuccess] = useState(true);
 
   const navigate = useNavigate();
-  const API_BASE = import.meta.env.VITE_API_BASE || 'https://smashly-backend.onrender.com';
+  const API_BASE = import.meta.env.VITE_BACKEND_URL || 'https://smashly-backend.onrender.com';
 
   useEffect(() => {
     const savedTable = sessionStorage.getItem('masaCurenta');
@@ -136,7 +136,7 @@ function Payment() {
   if (confirmed && method === 'card') {
     return (
       <div className="payment-confirmation-overlay fade-in">
-        <img src={confirmImage} alt="Confirmare" />
+        <img src={confirmImage} alt="Confirm" />
         <button
           className="btn-back-home"
           onClick={() => {
@@ -162,8 +162,7 @@ function Payment() {
             <div className="col-md-8">
               <div className="payment-card mb-4 shadow-sm p-4">
                 <div className="card-body">
-                  <div className="table-display">MASA {tableId}</div>
-
+                  <div className="table-display">{TEXTS.PAYMENT.TABLE_LABEL} {tableId}</div>
                   <h5 className="mb-3 card-title">{TEXTS.PAYMENT.ORDERS}</h5>
                   {orders.map((o, i) => (
                     <p key={i}>{TEXTS.PAYMENT.ORDER_LABEL} #{o._id.slice(-6)}: {o.totalAmount} {TEXTS.GENERAL.CURRENCY}</p>
@@ -189,7 +188,7 @@ function Payment() {
                       <input
                         type="text"
                         className="form-control"
-                        placeholder="John Doe"
+                        placeholder={TEXTS.PAYMENT.PLACEHOLDER_NAME}
                         value={card.name}
                         onChange={(e) => handleCardChange('name', e.target.value)}
                       />
@@ -199,7 +198,7 @@ function Payment() {
                       <input
                         type="text"
                         className="form-control"
-                        placeholder="Cod de 16 cifre"
+                        placeholder={TEXTS.PAYMENT.PLACEHOLDER_NUMBER}
                         value={card.number}
                         onChange={(e) => handleCardChange('number', e.target.value)}
                       />
@@ -213,7 +212,7 @@ function Payment() {
                           <input
                             type="text"
                             className="form-control"
-                            placeholder="MM/YY"
+                            placeholder={TEXTS.PAYMENT.PLACEHOLDER_EXPIRATION}
                             value={card.expiration}
                             onChange={(e) => handleCardChange('expiration', e.target.value)}
                           />
@@ -224,7 +223,7 @@ function Payment() {
                           <input
                             type="text"
                             className="form-control"
-                            placeholder="XXX"
+                            placeholder={TEXTS.PAYMENT.PLACEHOLDER_CVV}
                             value={card.cvv}
                             onChange={(e) => handleCardChange('cvv', e.target.value)}
                           />

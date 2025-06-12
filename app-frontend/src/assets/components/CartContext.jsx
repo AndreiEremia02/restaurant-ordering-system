@@ -26,7 +26,13 @@ export function CartProvider({ children }) {
 
   const addToCart = (product) => {
     if (product?.id && typeof product.price === 'number') {
-      setCartItems((prevItems) => [...prevItems, product]);
+      const productToAdd = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+      };
+      setCartItems((prevItems) => [...prevItems, productToAdd]);
     } else {
       console.warn(TEXTS.CART_CONTEXT.ADD_WARNING, product);
     }

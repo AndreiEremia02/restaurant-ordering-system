@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../assets/components/CartContext';
-import rawMenuData from '../assets/data/menuData';
+import menuData from '../assets/data/menuData';
 import { TEXTS } from '../assets/data/texts';
 import '../assets/styles/Menu.css';
 
@@ -13,22 +13,16 @@ function Menu() {
   const { addToCart } = useCart();
   const location = useLocation();
 
+  const isOnlineClient = location.pathname.includes('online-customer');
+
   useEffect(() => {
-    const masa = sessionStorage.getItem("masaCurenta");
+    const masa = sessionStorage.getItem('masaCurenta');
     if (masa) {
       setCartLink(`/cart?tableNumber=${masa}`);
     } else {
-      setCartLink("/cart?client=online-customer");
+      setCartLink('/cart?client=online-customer');
     }
   }, []);
-
-  const menuData = rawMenuData.map((category, catIndex) => ({
-    ...category,
-    products: category.products.map((product, index) => ({
-      ...product,
-      id: `${category.category || 'cat' + catIndex}-${index}`
-    }))
-  }));
 
   const handleQtyChange = (id, value) => {
     const qty = Math.max(1, parseInt(value) || 1);
@@ -42,7 +36,7 @@ function Menu() {
         id: product.id,
         name: product.name,
         price: product.price,
-        image: product.image
+        image: product.image,
       });
     }
     setPopupMessage(`"${product.name}" ${TEXTS.MENU.ADDED_TO_CART}`);
@@ -59,13 +53,11 @@ function Menu() {
     }
   };
 
-  const clientType = location.pathname.includes("online-customer");
-
   return (
     <div className="menu-container">
       <h2 className="menu-title">{TEXTS.MENU.TITLE}</h2>
 
-      {menuData.map((cat, index) => (
+      {menuData.map((cat) => (
         <div key={cat.category} className="menu-section mb-4">
           <h3 className="category-title">{cat.category}</h3>
           <div className="menu-carousel">
@@ -74,8 +66,10 @@ function Menu() {
                 <img src={product.image} alt={product.name} className="menu-img" />
                 <div className="menu-info" onClick={(e) => e.stopPropagation()}>
                   <h5 className="menu-name">{product.name.toUpperCase()}</h5>
-                  <p className="menu-price">{product.price} {TEXTS.GENERAL.CURRENCY}</p>
-                  {!clientType && (
+                  <p className="menu-price">
+                    {product.price} {TEXTS.GENERAL.CURRENCY}
+                  </p>
+                  {!isOnlineClient && (
                     <div className="menu-actions">
                       <input
                         type="number"
@@ -99,12 +93,20 @@ function Menu() {
       {selectedProduct && (
         <div className="product-popup" onClick={closePopup}>
           <div className="popup-content" onClick={(e) => e.stopPropagation()}>
-            <button className="popup-close" onClick={closePopup}>×</button>
-            <img src={selectedProduct.image} alt={selectedProduct.name} className="popup-img" />
+            <button className="popup-close" onClick={closePopup}>
+              ×
+            </button>
+            <img
+              src={selectedProduct.image}
+              alt={selectedProduct.name}
+              className="popup-img"
+            />
             <h3>{selectedProduct.name}</h3>
             <p>{selectedProduct.description}</p>
-            <p className="popup-price">{selectedProduct.price} {TEXTS.GENERAL.CURRENCY}</p>
-            {!clientType && (
+            <p className="popup-price">
+              {selectedProduct.price} {TEXTS.GENERAL.CURRENCY}
+            </p>
+            {!isOnlineClient && (
               <div className="popup-actions">
                 <input
                   type="number"
@@ -124,7 +126,7 @@ function Menu() {
 
       {popupMessage && <div className="quick-popup">{popupMessage}</div>}
 
-      {!clientType && cartLink && (
+      {!isOnlineClient && cartLink && (
         <Link to={cartLink} className="floating-cart-button">
           <i className="bi bi-cart-fill"></i>
         </Link>
