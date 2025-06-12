@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { TEXTS } from '../assets/data/texts';
 import '../assets/styles/OrdersDashboard.css';
@@ -7,7 +7,6 @@ import '../assets/styles/OrdersDashboard.css';
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://smashly-backend.onrender.com';
 
 function OrdersDashboard() {
-  const { id } = useParams();
   const navigate = useNavigate();
   const [ordersByTable, setOrdersByTable] = useState({});
   const [buzzState, setBuzzState] = useState({});
@@ -97,6 +96,7 @@ function OrdersDashboard() {
       setDeleteOrderId(null);
       setShowConfirm(false);
       fetchOrders();
+      window.dispatchEvent(new Event('popupTimeUpdated'));
     } catch (err) {}
   };
 

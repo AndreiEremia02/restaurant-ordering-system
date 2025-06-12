@@ -10,18 +10,12 @@ function OrderPopup({ show, setShow, timeLeft }) {
 
   const [isWaiterCalled, setIsWaiterCalled] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(timeLeft);
+  const [allDelivered, setAllDelivered] = useState(false);
 
   const tableNumber = parseInt(sessionStorage.getItem('masaCurenta'), 10) || 1;
-
   const popupExpireKey = `popupExpireAt_masa_${tableNumber}`;
   const popupActiveKey = `popupActive_masa_${tableNumber}`;
-
-  const [secondsLeft, setSecondsLeft] = useState(() => {
-    const expireAt = parseInt(sessionStorage.getItem(popupExpireKey), 10);
-    if (!expireAt || isNaN(expireAt)) return 0;
-    const remaining = Math.floor((expireAt - Date.now()) / 1000);
-    return remaining > 0 ? remaining : 0;
-  });
 
   useEffect(() => {
     const expireAt = parseInt(sessionStorage.getItem(popupExpireKey), 10);
@@ -29,14 +23,25 @@ function OrderPopup({ show, setShow, timeLeft }) {
 
     if (location.pathname.includes('/payment')) {
       setShow(false);
-    } else if (stillActive && expireAt > Date.now()) {
+    } else if ((stillActive && expireAt > Date.now()) || allDelivered) {
+      const remaining = Math.floor((expireAt - Date.now()) / 1000);
+      setSecondsLeft(remaining > 0 ? remaining : 0);
       setShow(true);
+    } else {
+      setShow(false);
     }
-  }, [location.pathname]);
+  }, [location.pathname, allDelivered]);
 
   useEffect(() => {
     if (!show) return;
-    setSecondsLeft(timeLeft);
+
+    if (timeLeft > 0) {
+      setSecondsLeft(timeLeft);
+    } else {
+      const storedExpire = parseInt(sessionStorage.getItem(popupExpireKey), 10);
+      const remaining = Math.floor((storedExpire - Date.now()) / 1000);
+      setSecondsLeft(remaining > 0 ? remaining : 0);
+    }
   }, [timeLeft, show]);
 
   useEffect(() => {
@@ -48,43 +53,56 @@ function OrderPopup({ show, setShow, timeLeft }) {
   }, [show, secondsLeft]);
 
   useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/orders/${tableNumber}`);
+        const orders = res.data.orders;
+
+        const activeOrders = orders.filter(order => order.status !== 'platita' && order.status !== 'livrat');
+        const hasOrders = orders.length > 0;
+        const deliveredOnly = hasOrders && activeOrders.length === 0;
+
+        if (deliveredOnly) {
+          setAllDelivered(true);
+          setShow(true);
+        } else if (activeOrders.length > 0) {
+          setAllDelivered(false);
+          setShow(true);
+        } else if (!hasOrders) {
+          sessionStorage.removeItem(popupExpireKey);
+          sessionStorage.removeItem(popupActiveKey);
+          setSecondsLeft(0);
+          setShow(false);
+        }
+      } catch (err) {
+        console.error(TEXTS.ORDER_POPUP.CHECK_ERROR, err);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     const handlePopupUpdate = () => {
-      updatePopupTimer();
+      const expireAt = parseInt(sessionStorage.getItem(popupExpireKey), 10);
+      const stillActive = sessionStorage.getItem(popupActiveKey) === 'true';
+
+      if (stillActive && expireAt > Date.now()) {
+        const remaining = Math.floor((expireAt - Date.now()) / 1000);
+        setSecondsLeft(remaining > 0 ? remaining : 0);
+        setAllDelivered(false);
+        setShow(true);
+      } else {
+        setAllDelivered(true);
+        setShow(true);
+      }
     };
 
     window.addEventListener('popupTimeUpdated', handlePopupUpdate);
     return () => window.removeEventListener('popupTimeUpdated', handlePopupUpdate);
   }, []);
 
-  const updatePopupTimer = async () => {
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/orders/${tableNumber}`);
-      const orders = res.data.orders;
-
-      const now = Date.now();
-
-      let totalRemainingSeconds = 0;
-
-      for (let order of orders) {
-        if (order.status !== 'livrat' && order.estimatedTime) {
-          const createdAt = new Date(order.createdAt).getTime();
-          const expireAt = createdAt + order.estimatedTime * 60000;
-          const remaining = Math.floor((expireAt - now) / 1000);
-          totalRemainingSeconds += remaining > 0 ? remaining : 0;
-        }
-      }
-
-      const newExpire = now + totalRemainingSeconds * 1000;
-      sessionStorage.setItem(popupExpireKey, newExpire.toString());
-      sessionStorage.setItem(popupActiveKey, 'true');
-
-      setSecondsLeft(totalRemainingSeconds);
-    } catch (err) {
-      console.error('Eroare la actualizarea timpului', err);
-    }
-  };
-
   const formatTime = (sec) => {
+    if (isNaN(sec) || sec < 0) return '00:00';
     const minutes = Math.floor(sec / 60).toString().padStart(2, '0');
     const seconds = (sec % 60).toString().padStart(2, '0');
     return `${minutes}:${seconds}`;
@@ -98,7 +116,6 @@ function OrderPopup({ show, setShow, timeLeft }) {
         const key = `buzz_table_${tableNumber}`;
         const expireTime = Date.now() + 2 * 60 * 1000;
         sessionStorage.setItem(key, expireTime);
-        window.dispatchEvent(new CustomEvent('buzzUpdated'));
       })
       .catch(() => alert(TEXTS.ORDER_POPUP.ERROR_CALL_WAITER));
   };
@@ -118,10 +135,11 @@ function OrderPopup({ show, setShow, timeLeft }) {
         {!isMinimized && (
           <>
             <div className="popup-timer">
-              {secondsLeft > 0 ? (
-                <>
-                  {TEXTS.ORDER_POPUP.TIME_LABEL} <strong>{formatTime(secondsLeft)}</strong>
-                </>
+              {(secondsLeft > 0 && !allDelivered) ? (
+                <span>
+                  {TEXTS.ORDER_POPUP.TIME_LABEL}{' '}
+                  <strong>{formatTime(secondsLeft)}</strong>
+                </span>
               ) : (
                 <span className="order-completed-text">{TEXTS.ORDER_POPUP.ORDER_COMPLETE}</span>
               )}
@@ -134,7 +152,7 @@ function OrderPopup({ show, setShow, timeLeft }) {
               <button
                 className="btn-pay"
                 onClick={() => {
-                  const masa = sessionStorage.getItem("masaCurenta");
+                  const masa = sessionStorage.getItem('masaCurenta');
                   navigate(`/payment?tableNumber=${masa}`);
                 }}
               >

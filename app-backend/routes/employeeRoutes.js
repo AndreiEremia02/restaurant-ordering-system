@@ -52,9 +52,9 @@ router.post('/check-admin-password', (req, res) => {
   const { password } = req.body;
 
   if (password === process.env.ADMIN_PASSWORD) {
-    res.json({ accesPermis: true });
+    res.json({ accessGranted: true });
   } else {
-    res.status(401).json({ accesPermis: false });
+    res.status(401).json({ accessGranted: false });
   }
 });
 

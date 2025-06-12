@@ -7,12 +7,18 @@ const mongoose = require('mongoose');
 
 const calculatePreparationTime = (products) => {
   let totalTime = 0;
+
   for (let item of products) {
     const found = menuData.find(p => p.id === item.id);
     if (found && found.time) {
       totalTime += found.time;
     }
   }
+
+  if (totalTime === 0) {
+    totalTime = 10;
+  }
+
   return totalTime;
 };
 
@@ -51,7 +57,7 @@ router.get('/orders/:tableId', async (req, res) => {
     const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
     const activeOrders = await Order.find({
       tableNumber: tableId,
-      status: { $ne: 'platita' },
+      status: 'activa',
       createdAt: { $gte: todayStart }
     });
     res.status(200).json({ tableNumber: tableId, orders: activeOrders });
@@ -90,11 +96,16 @@ router.put('/order/:id', async (req, res) => {
       status: { $nin: ['platita', 'livrata'] }
     });
 
+    const message = restante === 0 ? 'Comanda este pe drum' : null;
+
     res.json({
       mesaj: 'Status actualizat cu succes.',
       secondsReduced: order.estimatedTime * 60,
-      isLast: restante === 0
+      isLast: restante === 0,
+      popupMessage: message,
+      tableNumber: order.tableNumber
     });
+
   } catch (err) {
     res.status(500).json({ mesaj: 'Eroare la actualizarea comenzii.' });
   }
@@ -124,7 +135,7 @@ router.post('/call-waiter', async (req, res) => {
   }
 
   try {
-    const existingRequest = await WaiterRequest.findOne({ tableNumber, status: 'nepreluata' });
+    const existingRequest = await WaiterRequest.findOne({ tableNumber, status: 'buzz' });
     if (existingRequest) {
       const elapsed = Date.now() - new Date(existingRequest.requestedAt).getTime();
       if (elapsed < 2 * 60 * 1000) {
@@ -133,7 +144,7 @@ router.post('/call-waiter', async (req, res) => {
       await WaiterRequest.findByIdAndDelete(existingRequest._id);
     }
 
-    const newRequest = new WaiterRequest({ tableNumber });
+    const newRequest = new WaiterRequest({ tableNumber, status: 'buzz' });
     await newRequest.save();
 
     res.status(201).json({ mesaj: 'Ospatarul a fost chemat.', request: newRequest });
@@ -143,7 +154,7 @@ router.post('/call-waiter', async (req, res) => {
 });
 
 router.post('/pay', async (req, res) => {
-  const { orderId, paymentMethod, tipPercentage } = req.body;
+  const { orderId, paymentMethod } = req.body;
   if (!orderId || !paymentMethod) {
     return res.status(400).json({ mesaj: 'Date de plata incomplete.' });
   }
@@ -185,6 +196,21 @@ router.post('/pay-table', async (req, res) => {
     res.json({ mesaj: 'Toate comenzile au fost platite si sterse.', total, tip });
   } catch (err) {
     res.status(500).json({ mesaj: 'Eroare la procesarea platii.' });
+  }
+});
+
+router.get('/buzz-status', async (req, res) => {
+  try {
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+    const activeRequests = await WaiterRequest.find({
+      status: 'buzz',
+      requestedAt: { $gte: twoMinutesAgo }
+    });
+
+    const tableNumbers = activeRequests.map(req => req.tableNumber);
+    res.json({ tables: tableNumbers });
+  } catch (err) {
+    res.status(500).json({ mesaj: 'Eroare la verificarea cererilor BUZZ.' });
   }
 });
 

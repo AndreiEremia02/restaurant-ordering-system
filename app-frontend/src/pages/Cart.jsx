@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { TEXTS } from '../assets/data/texts';
 import '../assets/styles/Cart.css';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://smashly-backend.onrender.com/api';
+const API_BASE = import.meta.env.VITE_BACKEND_URL || 'https://smashly-backend.onrender.com';
 
 function Cart({ setShowPopup, setTimeLeft }) {
   const { cart, setCart } = useCart();
@@ -60,7 +60,7 @@ function Cart({ setShowPopup, setTimeLeft }) {
     });
 
     try {
-      const response = await fetch(`${API_BASE}/order`, {
+      const response = await fetch(`${API_BASE}/api/order`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,15 +76,25 @@ function Cart({ setShowPopup, setTimeLeft }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.mesaj || 'Server error');
+        throw new Error(data.mesaj || TEXTS.CART.SERVER_ERROR);
       }
 
-      const expireKey = `popupExpireAt_masa_${tableNumber}`;
       const activeKey = `popupActive_masa_${tableNumber}`;
-      const expireAt = Date.now() + data.order.estimatedTime * 60000;
+      const expireKey = `popupExpireAt_masa_${tableNumber}`;
+      const estimatedTimeSec = data.order.estimatedTime * 60;
 
-      sessionStorage.setItem(activeKey, 'true');
-      sessionStorage.setItem(expireKey, expireAt.toString());
+      if (estimatedTimeSec > 0) {
+        const expireAt = Date.now() + estimatedTimeSec * 1000;
+        sessionStorage.setItem(activeKey, 'true');
+        sessionStorage.setItem(expireKey, expireAt.toString());
+        setTimeLeft(estimatedTimeSec);
+        setShowPopup(true);
+        window.dispatchEvent(new CustomEvent('popupTimeUpdated'));
+      } else {
+        sessionStorage.removeItem(activeKey);
+        sessionStorage.removeItem(expireKey);
+        setShowPopup(false);
+      }
 
       setCart([]);
       setNotes([]);
@@ -96,11 +106,9 @@ function Cart({ setShowPopup, setTimeLeft }) {
 
       navigate(getRedirectPath('/cart'));
     } catch (error) {
-      console.error(TEXTS.CART.ORDER_ERROR, error);
       displayPopupMessage(TEXTS.CART.ORDER_ERROR);
     }
   };
-
 
   const total = calculateTotal();
 
@@ -115,7 +123,9 @@ function Cart({ setShowPopup, setTimeLeft }) {
           </div>
         ) : (
           <>
-            <div className="cart-table-display">MASA {tableNumber}</div>
+            <div className="cart-table-display">
+              {TEXTS.CART.TABLE_DISPLAY} {tableNumber}
+            </div>
 
             {cart.map((product, index) => (
               <div key={index} className="product-card">
@@ -130,7 +140,9 @@ function Cart({ setShowPopup, setTimeLeft }) {
                   <div className="product-details-column">
                     <div className="product-header">
                       <h5 className="product-name">{product.name}</h5>
-                      <span className="product-price">{product.price} {TEXTS.GENERAL.CURRENCY}</span>
+                      <span className="product-price">
+                        {product.price} {TEXTS.GENERAL.CURRENCY}
+                      </span>
                     </div>
                     <input
                       type="text"
@@ -150,7 +162,9 @@ function Cart({ setShowPopup, setTimeLeft }) {
               </div>
             ))}
 
-            <div className="total-section">{TEXTS.CART.TOTAL}: {total} {TEXTS.GENERAL.CURRENCY}</div>
+            <div className="total-section">
+              {TEXTS.CART.TOTAL}: {total} {TEXTS.GENERAL.CURRENCY}
+            </div>
 
             <div className="submit-section">
               <button className="submit-button" onClick={submitOrder}>

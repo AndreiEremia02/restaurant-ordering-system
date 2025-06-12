@@ -15,6 +15,7 @@ export const TEXTS = {
     ORDERS: "Comenzi:",
     ORDER_LABEL: "Comanda",
     TABLE_TOTAL: "Total masa",
+    TABLE_LABEL: "Masa",
     PAYMENT_METHOD: "Metoda de plata:",
     CASH: "Cash",
     CARD: "Card",
@@ -61,7 +62,8 @@ export const TEXTS = {
     TABLE_LABEL: "Masa",
     SUBMIT: "Plaseaza comanda",
     ORDER_SUCCESS: "Comanda a fost trimisa cu succes!",
-    ORDER_ERROR: "Eroare la trimiterea comenzii."
+    ORDER_ERROR: "Eroare la trimiterea comenzii.",
+    TABLE_DISPLAY: "MASA"
   },
    ORDER_POPUP: {
     TITLE: "Comanda Ta",
@@ -118,5 +120,7 @@ export const TEXTS = {
    CART_CONTEXT: {
     PARSE_ERROR: "Eroare la parsarea cosului:",
     ADD_WARNING: "Produsul adaugat nu are id sau pret valid:"
+  }, APP: {
+    CHECK_ACTIVE_ORDERS: "Nu s-au putut verifica comenzile active"
   }
 };
