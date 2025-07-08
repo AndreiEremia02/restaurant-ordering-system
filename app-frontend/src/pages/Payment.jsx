@@ -46,9 +46,14 @@ function Payment() {
   const fetchOrders = (table) => {
     if (!table) return;
     axios
-      .get(`${API_BASE}/api/orders/${table}`)
-      .then((res) => setOrders(res.data.orders.filter((o) => o.status !== 'platita')))
-      .catch(() => setOrders([]));
+      .get(`${API_BASE}/api/orders/${table}?forClient=true`)
+      .then((res) => {
+        const filtered = res.data.orders.filter((o) => o.status !== 'platita');
+        setOrders(filtered);
+      })
+      .catch(() => {
+        setOrders([]);
+      });
   };
 
   const calculateTotal = () => {
@@ -105,13 +110,13 @@ function Payment() {
     }
 
     Promise.all(
-      orders.map((order) =>
-        axios.post(`${API_BASE}/api/pay`, {
+      orders.map((order) => {
+        return axios.post(`${API_BASE}/api/pay`, {
           orderId: order._id,
           paymentMethod: method,
           tipPercentage: tip,
-        })
-      )
+        });
+      })
     )
       .then(() => {
         const popupExpireKey = `popupExpireAt_masa_${tableId}`;
@@ -130,7 +135,9 @@ function Payment() {
           setDisplaySuccess(true);
         }
       })
-      .catch(() => alert(TEXTS.PAYMENT.PAYMENT_ERROR));
+      .catch(() => {
+        alert(TEXTS.PAYMENT.PAYMENT_ERROR);
+      });
   };
 
   if (confirmed && method === 'card') {
@@ -156,7 +163,6 @@ function Payment() {
     <div className="payment-page-wrapper">
       <div className="container payment-page">
         <h2 className="payment-title">{TEXTS.PAYMENT.TITLE}</h2>
-
         {orders.length > 0 && (
           <div className="row justify-content-center">
             <div className="col-md-8">
@@ -168,7 +174,6 @@ function Payment() {
                     <p key={i}>{TEXTS.PAYMENT.ORDER_LABEL} #{o._id.slice(-6)}: {o.totalAmount} {TEXTS.GENERAL.CURRENCY}</p>
                   ))}
                   <p className="fw-bold mt-3">{TEXTS.PAYMENT.TABLE_TOTAL}: {calculateTotal()} {TEXTS.GENERAL.CURRENCY}</p>
-
                   <div className="mb-3">
                     <label>{TEXTS.PAYMENT.PAYMENT_METHOD}</label>
                     <select
@@ -180,7 +185,6 @@ function Payment() {
                       <option value="card">{TEXTS.PAYMENT.CARD}</option>
                     </select>
                   </div>
-
                   {method === 'card' && (
                     <div className="mb-3">
                       <label>{TEXTS.PAYMENT.CARD_NAME}</label>
@@ -192,7 +196,6 @@ function Payment() {
                         value={card.name}
                         onChange={(e) => handleCardChange('name', e.target.value)}
                       />
-
                       <label className="mt-2">{TEXTS.PAYMENT.CARD_NUMBER}</label>
                       {validationErrors.number && <div className="text-danger">{validationErrors.number}</div>}
                       <input
@@ -202,7 +205,6 @@ function Payment() {
                         value={card.number}
                         onChange={(e) => handleCardChange('number', e.target.value)}
                       />
-
                       <div className="row mt-2">
                         <div className="col">
                           <label>{TEXTS.PAYMENT.EXPIRATION}</label>
@@ -231,7 +233,6 @@ function Payment() {
                       </div>
                     </div>
                   )}
-
                   <div className="mb-3">
                     <label>{TEXTS.PAYMENT.TIPS}</label>
                     <div className="d-flex flex-wrap gap-2 mt-1">
@@ -253,7 +254,6 @@ function Payment() {
                       placeholder={TEXTS.PAYMENT.CUSTOM_TIP}
                     />
                   </div>
-
                   <button className="send-payment w-100" onClick={handlePayment}>
                     {TEXTS.PAYMENT.PAY_NOW}
                   </button>
@@ -262,7 +262,6 @@ function Payment() {
             </div>
           </div>
         )}
-
         {showCashNotice && method === 'cash' && (
           <div className="cash-popup">{TEXTS.PAYMENT.CASH_NOTICE}</div>
         )}

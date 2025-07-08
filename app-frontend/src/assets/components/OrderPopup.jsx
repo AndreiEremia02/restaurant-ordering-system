@@ -20,7 +20,6 @@ function OrderPopup({ show, setShow, timeLeft }) {
   useEffect(() => {
     const expireAt = parseInt(sessionStorage.getItem(popupExpireKey), 10);
     const stillActive = sessionStorage.getItem(popupActiveKey) === 'true';
-
     if (location.pathname.includes('/payment')) {
       setShow(false);
     } else if ((stillActive && expireAt > Date.now()) || allDelivered) {
@@ -34,7 +33,6 @@ function OrderPopup({ show, setShow, timeLeft }) {
 
   useEffect(() => {
     if (!show) return;
-
     if (timeLeft > 0) {
       setSecondsLeft(timeLeft);
     } else {
@@ -55,37 +53,28 @@ function OrderPopup({ show, setShow, timeLeft }) {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/orders/${tableNumber}`);
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/orders/${tableNumber}?forClient=true`);
         const orders = res.data.orders;
-
-        const activeOrders = orders.filter(order => order.status !== 'platita' && order.status !== 'livrat');
-        const hasOrders = orders.length > 0;
-        const deliveredOnly = hasOrders && activeOrders.length === 0;
-
-        if (deliveredOnly) {
-          setAllDelivered(true);
-          setShow(true);
-        } else if (activeOrders.length > 0) {
-          setAllDelivered(false);
-          setShow(true);
-        } else if (!hasOrders) {
+        const unpaidOrders = orders.filter(order => order.status !== 'platita');
+        if (unpaidOrders.length === 0) {
           sessionStorage.removeItem(popupExpireKey);
           sessionStorage.removeItem(popupActiveKey);
           setSecondsLeft(0);
           setShow(false);
+        } else {
+          const allAreDelivered = unpaidOrders.every(order => order.status === 'livrat');
+          setAllDelivered(allAreDelivered);
+          setShow(true);
         }
-      } catch (err) {
-        console.error(TEXTS.ORDER_POPUP.CHECK_ERROR, err);
-      }
+      } catch (err) {}
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [tableNumber]);
 
   useEffect(() => {
     const handlePopupUpdate = () => {
       const expireAt = parseInt(sessionStorage.getItem(popupExpireKey), 10);
       const stillActive = sessionStorage.getItem(popupActiveKey) === 'true';
-
       if (stillActive && expireAt > Date.now()) {
         const remaining = Math.floor((expireAt - Date.now()) / 1000);
         setSecondsLeft(remaining > 0 ? remaining : 0);
@@ -96,7 +85,6 @@ function OrderPopup({ show, setShow, timeLeft }) {
         setShow(true);
       }
     };
-
     window.addEventListener('popupTimeUpdated', handlePopupUpdate);
     return () => window.removeEventListener('popupTimeUpdated', handlePopupUpdate);
   }, []);
@@ -120,6 +108,24 @@ function OrderPopup({ show, setShow, timeLeft }) {
       .catch(() => alert(TEXTS.ORDER_POPUP.ERROR_CALL_WAITER));
   };
 
+  useEffect(() => {
+    const key = `buzz_table_${tableNumber}`;
+    const expire = parseInt(sessionStorage.getItem(key), 10);
+    if (expire && expire > Date.now()) {
+      setIsWaiterCalled(true);
+      const interval = setInterval(() => {
+        const now = Date.now();
+        if (parseInt(sessionStorage.getItem(key), 10) <= now) {
+          setIsWaiterCalled(false);
+          clearInterval(interval);
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setIsWaiterCalled(false);
+    }
+  }, [tableNumber]);
+
   if (!show || location.pathname.includes('/payment')) return null;
 
   return (
@@ -131,7 +137,6 @@ function OrderPopup({ show, setShow, timeLeft }) {
             {isMinimized ? '🔼' : '🔽'}
           </button>
         </div>
-
         {!isMinimized && (
           <>
             <div className="popup-timer">
@@ -144,7 +149,6 @@ function OrderPopup({ show, setShow, timeLeft }) {
                 <span className="order-completed-text">{TEXTS.ORDER_POPUP.ORDER_COMPLETE}</span>
               )}
             </div>
-
             <div className="popup-buttons">
               <button className="btn-call" onClick={callWaiter} disabled={isWaiterCalled}>
                 {isWaiterCalled ? TEXTS.ORDER_POPUP.CALLED : TEXTS.ORDER_POPUP.CALL}

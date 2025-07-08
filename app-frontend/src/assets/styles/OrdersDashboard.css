@@ -69,11 +69,19 @@
 }
 
 .buzz-badge {
+  position: absolute;
+  right: 70px;
   color: orange;
   font-weight: bold;
-  margin-left: 10px;
   font-size: 1.3rem;
   text-shadow: 1px 1px white;
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
+  z-index: 10;
 }
 
 .arrow {
@@ -132,9 +140,14 @@
   background-color: #218838;
 }
 
-.order-status {
-  color: red;
-  font-weight: bold;
+.order-status-livrat { 
+  color: #28a745; 
+  font-weight: bold; 
+}
+
+.order-status-activa { 
+  color: #d62a2a; 
+  font-weight: bold; 
 }
 
 .delete-button {
@@ -240,6 +253,29 @@
   min-width: 80px;
 }
 
+.header-buttons {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.stats-button {
+  background-color: #000000;
+  color: white;
+  font-family: 'Luckiest Guy', cursive;
+  padding: 0.4rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-right: 0.3rem;
+  font-size: 1rem;
+}
+.stats-button:hover {
+  background-color: #28a745;
+}
+
 @media (max-width: 600px) {
   .orders-header {
     flex-direction: column;
@@ -257,5 +293,22 @@
     font-size: 2rem;
     text-align: center;
     margin-bottom: 0;
+  }
+
+  .buzz-badge {
+    right: 45px !important;
+    top: 6px !important;
+    font-size: 1.1rem;
+  }
+
+  .header-buttons {
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-top: 0.8rem;
+    margin-bottom: 0.8rem;
+  }
+  .stats-button, .logout-button {
+    width: 100%;
+    font-size: 1.1rem;
   }
 }

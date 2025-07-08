@@ -3,13 +3,10 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
-const cron = require('node-cron');
 
 const { router: menuRouter } = require('./routes/menuRoutes');
 const ordersRoutes = require('./routes/ordersRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
-
-const Order = require('./models/Order');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,7 +18,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('CORS nu permite!'));
+      callback(new Error('CORS not allowed'));
     }
   },
   credentials: true
@@ -35,33 +32,11 @@ app.use('/api', ordersRoutes);
 app.use('/api/employees', employeeRoutes);
 
 app.get('/', (req, res) => {
-  res.send('Serverul functioneaza!');
-});
-
-const cleanupOldOrders = async () => {
-  try {
-    const cutoff = new Date(new Date().setHours(0, 0, 0, 0));
-    const result = await Order.deleteMany({
-      createdAt: { $lt: cutoff }
-    });
-    console.log(`Cleanup: ${result.deletedCount} comenzi vechi sterse.`);
-  } catch (err) {
-    console.error('Eroare la cleanup:', err);
-  }
-};
-
-cron.schedule('1 0 * * *', () => {
-  console.log('Rulez cleanup zilnic...');
-  cleanupOldOrders();
+  res.send('Server running');
 });
 
 mongoose.connect(process.env.MONGO_URI, { dbName: 'smashlyBD' })
-  .then(() => {
-    console.log('Conectat la MongoDB Atlas');
-    cleanupOldOrders();
-  })
-  .catch(err => console.error('Eroare conectare:', err));
+  .then(() => {})
+  .catch(() => {});
 
-app.listen(PORT, () => {
-  console.log(`Serverul ruleaza pe http://localhost:${PORT}`);
-});
+app.listen(PORT, () => {});

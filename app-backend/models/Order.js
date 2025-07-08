@@ -43,6 +43,14 @@ const OrderSchema = new mongoose.Schema({
   totalWithTip: {
     type: Number,
     default: 0
+  },
+  isPaid: { 
+    type: Boolean, 
+    default: false 
+  },
+  isDeletedByEmployee: { 
+    type: Boolean, 
+    default: false 
   }
 });
 

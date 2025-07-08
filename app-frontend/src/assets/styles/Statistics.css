@@ -1,0 +1,153 @@
+.statistics-page {
+  background: #cce6ff !important;
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+.statistics-card {
+  background: #fff;
+  border-radius: 32px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.07);
+  margin-bottom: 2.5rem;
+  padding: 2.2rem 16px;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  overflow-x: visible;
+}
+
+.statistics-chart-wrapper {
+  margin-left: 8px;
+  margin-right: 8px;
+  min-width: 320px;
+}
+
+.statistics-header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 44px 0 44px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background: transparent;
+  min-height: 50px;
+  box-sizing: border-box;
+}
+@media (max-width: 576px) {
+  .statistics-header {
+    justify-content: center;
+    padding: 0 4px 0 4px;
+  }
+}
+
+.orders-link-btn {
+  font-family: 'Luckiest Guy', cursive;
+  background: #000;
+  color: #fff;
+  font-size: 1.1rem;
+  padding: 0.45rem 2.2rem;
+  border: none;
+  border-radius: 1.4em;
+  box-shadow: 0 2px 10px 0 rgba(0,0,0,0.18);
+  cursor: pointer;
+  margin-left: 0.8em;
+  transition: background 0.18s, color 0.18s;
+  outline: none;
+}
+.orders-link-btn:hover {
+  background: #28a745;
+  color: #fff;
+}
+
+.statistics-title, .chart-title {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 2.2rem;
+  color: white;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px #000, 4px 4px #000;
+  text-align: center;
+  margin-bottom: 1.2rem;
+}
+
+.text-box-shadow {
+  display: inline-block;
+  background: #000000;
+  padding: 0.2em 2em;
+  border-radius: 1em;
+  box-shadow: 0 2px 10px 0 rgba(0,0,0,0.22);
+  letter-spacing: 2px;
+}
+
+.statistics-table {
+  border-radius: 16px;
+  overflow: hidden;
+  font-size: 1.07rem;
+}
+
+.statistics-toggle-group {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.statistics-toggle-btn {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1rem;
+  padding: 4px 22px;
+  border: none;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.07);
+  transition: background 0.18s, color 0.18s;
+  cursor: pointer;
+  outline: none;
+}
+.statistics-toggle-btn:hover{
+    background: #28a745;
+}
+.statistics-toggle-btn.active{
+  background: black;
+  color: white;
+}
+
+@media (max-width: 991px) {
+  .statistics-title, .chart-title {
+    font-size: 1.4rem;
+    padding-top: 10px;
+  }
+  .statistics-card {
+    padding: 1rem 8px !important;
+  }
+  .statistics-toggle-btn {
+    font-size: 0.95rem;
+    padding: 3px 14px;
+  }
+  .statistics-chart-wrapper {
+    margin-left: 4px;
+    margin-right: 4px;
+    min-width: 320px;
+  }
+}
+
+@media (max-width: 576px) {
+  .statistics-card {
+    padding: 0.2rem 4px !important;
+  }
+  .statistics-title, .chart-title {
+    font-size: 1.05rem;
+    padding-top: 8px;
+  }
+  .statistics-toggle-btn {
+    font-size: 0.85rem;
+    padding: 3px 10px;
+  }
+  .statistics-chart-wrapper {
+    margin-left: 4px;
+    margin-right: 4px;
+    min-width: 340px;
+    overflow-x: auto;
+  }
+}

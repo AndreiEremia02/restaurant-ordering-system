@@ -1,18 +1,22 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { TEXTS } from '../assets/data/texts';
 import '../assets/styles/OrdersDashboard.css';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://smashly-backend.onrender.com';
+const API_BASE = import.meta.env.VITE_BACKEND_URL || 'https://smashly-backend.onrender.com';
 
 function OrdersDashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [ordersByTable, setOrdersByTable] = useState({});
   const [buzzState, setBuzzState] = useState({});
   const [expandedTables, setExpandedTables] = useState({});
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState(null);
+
+  const pathParts = location.pathname.split('/');
+  const employeeId = pathParts[2] || '';
 
   useEffect(() => {
     fetchOrders();
@@ -36,33 +40,33 @@ function OrdersDashboard() {
     for (let i = 1; i <= 8; i++) {
       try {
         const response = await axios.get(`${API_BASE}/api/orders/${i}`);
-        newData[i] = response.data.orders || [];
+        newData[String(i)] = response.data.orders || [];
       } catch (error) {
-        newData[i] = [];
+        newData[String(i)] = [];
       }
     }
-
-    const dataChanged = JSON.stringify(newData) !== JSON.stringify(ordersByTable);
-    if (dataChanged) {
-      setOrdersByTable(newData);
-    }
+    setOrdersByTable(newData);
   };
 
-  const refreshBuzzState = () => {
-    const buzz = {};
-    for (let i = 1; i <= 8; i++) {
-      const expire = parseInt(sessionStorage.getItem(`buzz_table_${i}`), 10);
-      if (expire && expire > Date.now()) {
-        buzz[i] = true;
-      }
+  const refreshBuzzState = async () => {
+    try {
+      const response = await axios.get(`${API_BASE}/api/buzz-status`);
+      const buzz = {};
+      response.data.tables.forEach(tableNum => {
+        const activeOrders = ordersByTable[String(tableNum)];
+        if (activeOrders && activeOrders.length > 0) {
+          buzz[tableNum] = true;
+        }
+      });
+      setBuzzState(buzz);
+    } catch (e) {
+      setBuzzState({});
     }
-    setBuzzState(buzz);
   };
 
   const handleOrderDelivered = async (orderId, newStatus, tableNumber) => {
     try {
       const response = await axios.put(`${API_BASE}/api/order/${orderId}`, { newStatus });
-
       if (newStatus === 'livrat') {
         const { secondsReduced } = response.data;
         const tableKey = `popupExpireAt_masa_${tableNumber}`;
@@ -71,7 +75,6 @@ function OrdersDashboard() {
         sessionStorage.setItem(tableKey, newExpireAt);
         window.dispatchEvent(new Event('popupTimeUpdated'));
       }
-
       fetchOrders();
     } catch (error) {}
   };
@@ -92,7 +95,7 @@ function OrdersDashboard() {
 
   const deleteOrder = async () => {
     try {
-      await axios.delete(`${API_BASE}/api/order/${deleteOrderId}`);
+      await axios.put(`${API_BASE}/api/order/${deleteOrderId}/hide`);
       setDeleteOrderId(null);
       setShowConfirm(false);
       fetchOrders();
@@ -104,21 +107,29 @@ function OrdersDashboard() {
     <div className="orders-dashboard">
       <div className="orders-header">
         <h2 className="orders-title">{TEXTS.DASHBOARD.TITLE}</h2>
-        <button
-          className="logout-button"
-          onClick={() => {
-            sessionStorage.removeItem('loggedEmployee');
-            navigate('/login');
-          }}
-        >
-          {TEXTS.DASHBOARD.LOGOUT_BUTTON}
-        </button>
+        <div className="header-buttons">
+          <button
+            className="stats-button"
+            onClick={() => navigate(`/employee/${employeeId}/stats`)}
+          >
+            STATISTICI
+          </button>
+          <button
+            className="logout-button"
+            onClick={() => {
+              sessionStorage.removeItem('loggedEmployee');
+              navigate('/login');
+            }}
+          >
+            {TEXTS.DASHBOARD.LOGOUT_BUTTON}
+          </button>
+        </div>
       </div>
 
       <div className="table-list">
         {Array.from({ length: 8 }, (_, index) => {
           const tableNumber = index + 1;
-          const orders = ordersByTable[tableNumber] || [];
+          const orders = ordersByTable[String(tableNumber)] || [];
           const isExpanded = expandedTables[tableNumber];
 
           return (
@@ -126,9 +137,13 @@ function OrdersDashboard() {
               <div className="table-header" onClick={() => toggleExpand(tableNumber)}>
                 <span className="table-title">
                   {TEXTS.DASHBOARD.TABLE_LABEL} #{tableNumber} - {orders.length} {TEXTS.DASHBOARD.ACTIVE_ORDERS}
-                  {buzzState[tableNumber] && <span className="buzz-badge"> {TEXTS.DASHBOARD.BUZZ}</span>}
                 </span>
-                <span className="arrow">{isExpanded ? '▲' : '▼'}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  {buzzState[tableNumber] && orders.length > 0 && (
+                    <span className="buzz-badge">{TEXTS.DASHBOARD.BUZZ}</span>
+                  )}
+                  <span className="arrow">{isExpanded ? '▲' : '▼'}</span>
+                </div>
               </div>
 
               {isExpanded && (
@@ -137,22 +152,24 @@ function OrdersDashboard() {
                     <p>{TEXTS.DASHBOARD.NO_ORDERS}</p>
                   ) : (
                     orders.map(order => (
-                      <div key={order._id} className="order-card">
+                      <div key={order._id || order.id} className="order-card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <h5>{TEXTS.DASHBOARD.ORDER} #{order._id.slice(-6)}</h5>
+                          <h5>
+                            {TEXTS.DASHBOARD.ORDER} #{(order._id || order.id || '').toString().slice(-6)}
+                          </h5>
                           <button
                             className="delete-button"
-                            onClick={() => confirmDelete(order._id)}
+                            onClick={() => confirmDelete(order._id || order.id)}
                           >
                             X
                           </button>
                         </div>
                         <p><strong>{TEXTS.DASHBOARD.TIME}:</strong> {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                        <p><strong>{TEXTS.DASHBOARD.STATUS}:</strong> <span className="order-status">{order.status}</span></p>
+                        <p><strong>{TEXTS.DASHBOARD.STATUS}:</strong> <span className={`order-status order-status-${order.status}`}>{order.status}</span></p>
                         <p><strong>{TEXTS.DASHBOARD.TOTAL}:</strong> {order.totalAmount} {TEXTS.GENERAL.CURRENCY}</p>
                         <ul>
                           {order.products.map((item, idx) => {
-                            const noteArray = order.notes?.split(';') || [];
+                            const noteArray = Array.isArray(order.notes) ? order.notes : (order.notes?.split(';') || []);
                             const productNote = noteArray[idx]?.trim();
                             return (
                               <li key={idx}>
@@ -163,9 +180,10 @@ function OrdersDashboard() {
                         </ul>
                         <button
                           className="btn-delivered"
-                          onClick={() => handleOrderDelivered(order._id, 'livrat', order.tableNumber)}
+                          onClick={() => handleOrderDelivered(order._id || order.id, 'livrat', order.tableNumber)}
+                          disabled={order.status === 'livrat'}
                         >
-                          {TEXTS.DASHBOARD.MARK_DELIVERED}
+                          {order.status === 'livrat' ? TEXTS.DASHBOARD.ALREADY_DELIVERED : TEXTS.DASHBOARD.MARK_DELIVERED}
                         </button>
                       </div>
                     ))

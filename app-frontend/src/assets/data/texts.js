@@ -42,7 +42,8 @@ export const TEXTS = {
     FETCH_ERROR: "Eroare la preluarea comenzilor pentru masa",
     UPDATE_ERROR: "Eroare la actualizarea comenzii:",
     DELETE_CONFIRMATION : "Confirmi stergerea comenzii cu ID",
-    LOGOUT_BUTTON: "Delogare"
+    LOGOUT_BUTTON: "Delogare",
+    ALREADY_DELIVERED: "Livrată"
   },
    MENU: {
     TITLE: "MENIU",
@@ -122,5 +123,13 @@ export const TEXTS = {
     ADD_WARNING: "Produsul adaugat nu are id sau pret valid:"
   }, APP: {
     CHECK_ACTIVE_ORDERS: "Nu s-au putut verifica comenzile active"
+  },STATISTICS: {
+    TITLE_HOURLY: 'Ziua Curenta',
+    TITLE_LAST_30: 'Incasari pe ultimele 30 de zile',
+    TITLE_LAST_12: 'Incasari pe ultimele 12 luni',
+    TITLE_TOP_PRODUCTS: 'Top 10 produse vandute 2025',
+    PRODUS: 'Produs',
+    CANTITATE: 'Cantitate',
+    NU_SUNT_PRODUSE: 'Nu exista produse vandute in perioada selectata'
   }
 };
