@@ -16,6 +16,13 @@ export default function Statistics() {
   const [range, setRange] = useState('zile');
 
   useEffect(() => {
+    const loggedEmployee = sessionStorage.getItem('loggedEmployee');
+    if (!loggedEmployee) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     axios.get(`${API_BASE}/api/stats`)
       .then(res => setData(res.data))
       .catch(() => setData({}));
@@ -85,8 +92,8 @@ export default function Statistics() {
             <thead className="table-dark">
               <tr>
                 <th>#</th>
-                <th>{TEXTS.STATISTICS.PRODUS}</th>
-                <th>{TEXTS.STATISTICS.CANTITATE}</th>
+                <th>{TEXTS.STATISTICS.PRODUCT}</th>
+                <th>{TEXTS.STATISTICS.QUANTITY}</th>
               </tr>
             </thead>
             <tbody>
@@ -100,7 +107,7 @@ export default function Statistics() {
             </tbody>
           </table>
           {!topProducts.length && (
-            <div className="text-center mt-2">{TEXTS.STATISTICS.NU_SUNT_PRODUSE}</div>
+            <div className="text-center mt-2">{TEXTS.STATISTICS.NO_PRODUCTS}</div>
           )}
         </div>
       </div>

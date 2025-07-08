@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const Employee = require('../models/Employee');
+const STRINGS = require('../strings');
 
 function generateEmployeeId() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -12,7 +13,8 @@ router.post('/register', async (req, res) => {
 
   try {
     const existing = await Employee.findOne({ email });
-    if (existing) return res.status(400).json({ mesaj: 'Email deja inregistrat' });
+    if (existing) 
+      return res.status(400).json({ mesaj: STRINGS.EMAIL_ALREADY_REGISTERED });
 
     let employeeId;
     let idExists = true;
@@ -28,7 +30,7 @@ router.post('/register', async (req, res) => {
 
     res.json({ employeeId });
   } catch (err) {
-    res.status(500).json({ mesaj: 'Eroare de server' });
+    res.status(500).json({ mesaj: STRINGS.SERVER_ERROR });
   }
 });
 
@@ -37,14 +39,16 @@ router.post('/login', async (req, res) => {
 
   try {
     const employee = await Employee.findOne({ employeeId, name });
-    if (!employee) return res.status(400).json({ mesaj: 'Date de autentificare invalide' });
+    if (!employee) 
+      return res.status(400).json({ mesaj: STRINGS.INVALID_LOGIN });
 
     const valid = await bcrypt.compare(password, employee.passwordHash);
-    if (!valid) return res.status(400).json({ mesaj: 'Date de autentificare invalide' });
+    if (!valid) 
+      return res.status(400).json({ mesaj: STRINGS.INVALID_LOGIN });
 
-    res.json({ mesaj: 'Autentificare reusita' });
+    res.json({ mesaj: STRINGS.LOGIN_SUCCESS });
   } catch (err) {
-    res.status(500).json({ mesaj: 'Eroare de server' });
+    res.status(500).json({ mesaj: STRINGS.SERVER_ERROR });
   }
 });
 

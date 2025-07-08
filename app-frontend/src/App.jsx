@@ -11,7 +11,6 @@ import OrderPopup from './assets/components/OrderPopup';
 import Footer from './assets/components/Footer';
 import Login from './pages/Login';
 import axios from 'axios';
-import { TEXTS } from './assets/data/texts';
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL;
 

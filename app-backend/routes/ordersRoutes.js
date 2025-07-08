@@ -4,6 +4,7 @@ const Order = require('../models/Order');
 const WaiterRequest = require('../models/WaiterRequest');
 const menuData = require('./menuRoutes').menuDataFlat;
 const mongoose = require('mongoose');
+const STRINGS = require('../strings');
 
 const calculatePreparationTime = (products) => {
   let totalTime = 0;
@@ -35,9 +36,9 @@ router.post('/order', async (req, res) => {
     });
 
     await newOrder.save();
-    res.status(201).json({ mesaj: 'Comanda inregistrata cu succes.', order: newOrder });
+    res.status(201).json({ mesaj: STRINGS.ORDER_REGISTERED, order: newOrder });
   } catch (err) {
-    res.status(500).json({ mesaj: 'Eroare la salvarea comenzii.' });
+    res.status(500).json({ mesaj: STRINGS.ORDER_SAVE_ERROR });
   }
 });
 
@@ -45,7 +46,7 @@ router.get('/orders/:tableId', async (req, res) => {
   const tableId = req.params.tableId;
   const forClient = req.query.forClient === 'true';
   if (!tableId) {
-    return res.status(400).json({ mesaj: 'ID-ul mesei este invalid.' });
+    return res.status(400).json({ mesaj: STRINGS.INVALID_TABLE_ID });
   }
   try {
     if (forClient) {
@@ -65,7 +66,7 @@ router.get('/orders/:tableId', async (req, res) => {
       return res.status(200).json({ tableNumber: tableId, orders: activeOrders });
     }
   } catch (err) {
-    res.status(500).json({ mesaj: 'Eroare la citirea comenzilor.' });
+    res.status(500).json({ mesaj: STRINGS.ORDERS_READ_ERROR });
   }
 });
 
@@ -73,11 +74,11 @@ router.put('/order/:id', async (req, res) => {
   const { id } = req.params;
   const { newStatus } = req.body;
   if (!newStatus) {
-    return res.status(400).json({ mesaj: 'Statusul nou este necesar.' });
+    return res.status(400).json({ mesaj: STRINGS.STATUS_REQUIRED });
   }
   try {
     const order = await Order.findById(id);
-    if (!order) return res.status(404).json({ mesaj: 'Comanda nu a fost gasita.' });
+    if (!order) return res.status(404).json({ mesaj: STRINGS.ORDER_NOT_FOUND });
 
     order.status = newStatus;
     await order.save();
@@ -92,54 +93,54 @@ router.put('/order/:id', async (req, res) => {
     const message = restante === 0 ? 'Comanda este pe drum' : null;
 
     res.json({
-      mesaj: 'Status actualizat cu succes.',
+      mesaj: STRINGS.STATUS_UPDATED,
       secondsReduced: order.estimatedTime * 60,
       isLast: restante === 0,
       popupMessage: message,
       tableNumber: order.tableNumber
     });
   } catch (err) {
-    res.status(500).json({ mesaj: 'Eroare la actualizarea comenzii.' });
+    res.status(500).json({ mesaj: STRINGS.ORDERS_READ_ERROR });
   }
 });
 
 router.put('/order/:id/hide', async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ mesaj: 'ID comanda invalid.' });
+    return res.status(400).json({ mesaj: STRINGS.INVALID_ORDER_ID });
   }
   try {
     const order = await Order.findById(id);
     if (!order) {
-      return res.status(404).json({ mesaj: 'Comanda nu a fost gasita.' });
+      return res.status(404).json({ mesaj: STRINGS.ORDER_NOT_FOUND });
     }
     order.isDeletedByEmployee = true;
     await order.save();
-    res.json({ mesaj: 'Comanda a fost ascunsa din dashboard.' });
+    res.json({ mesaj: STRINGS.ORDER_HIDDEN });
   } catch (err) {
-    res.status(500).json({ mesaj: 'Eroare la ascunderea comenzii.' });
+    res.status(500).json({ mesaj: STRINGS.ORDER_HIDE_ERROR });
   }
 });
 
 router.post('/call-waiter', async (req, res) => {
   const { tableNumber } = req.body;
   if (!tableNumber) {
-    return res.status(400).json({ mesaj: 'Numarul mesei este necesar.' });
+    return res.status(400).json({ mesaj: STRINGS.TABLE_NUMBER_REQUIRED });
   }
   try {
     const existingRequest = await WaiterRequest.findOne({ tableNumber, status: 'buzz' });
     if (existingRequest) {
       const elapsed = Date.now() - new Date(existingRequest.requestedAt).getTime();
       if (elapsed < 2 * 60 * 1000) {
-        return res.status(400).json({ mesaj: 'Exista deja o cerere activa pentru aceasta masa.' });
+        return res.status(400).json({ mesaj: STRINGS.WAITER_ALREADY_CALLED });
       }
       await WaiterRequest.findByIdAndDelete(existingRequest._id);
     }
     const newRequest = new WaiterRequest({ tableNumber, status: 'buzz' });
     await newRequest.save();
-    res.status(201).json({ mesaj: 'Ospatarul a fost chemat.', request: newRequest });
+    res.status(201).json({ mesaj: STRINGS.WAITER_CALLED, request: newRequest });
   } catch (err) {
-    res.status(500).json({ mesaj: 'Eroare la chemarea ospatarului.' });
+    res.status(500).json({ mesaj: STRINGS.WAITER_ERROR });
   }
 });
 
@@ -148,7 +149,7 @@ router.post('/pay', async (req, res) => {
   try {
     const order = await Order.findById(orderId);
     if (!order) {
-      return res.status(404).json({ message: 'Comanda nu a fost gasita' });
+      return res.status(404).json({ message: STRINGS.PAYMENT_ORDER_NOT_FOUND });
     }
     order.paymentMethod = paymentMethod;
     order.tipAmount = Math.round((tipPercentage / 100) * order.totalAmount);
@@ -156,9 +157,9 @@ router.post('/pay', async (req, res) => {
     order.status = 'platita';
     order.isPaid = true;
     await order.save();
-    res.status(200).json({ message: 'Plata procesata' });
+    res.status(200).json({ message: STRINGS.PAYMENT_SUCCESS });
   } catch (error) {
-    res.status(500).json({ message: 'Eroare la plata' });
+    res.status(500).json({ message: STRINGS.PAYMENT_PROCESS_ERROR });
   }
 });
 
@@ -172,7 +173,7 @@ router.post('/pay-table', async (req, res) => {
       isDeletedByEmployee: false
     });
     if (!unpaidOrders.length) {
-      return res.status(404).json({ mesaj: 'Nu exista comenzi de plata pentru aceasta masa.' });
+      return res.status(404).json({ mesaj: STRINGS.NO_ORDERS_TO_PAY });
     }
     const total = unpaidOrders.reduce((acc, o) => acc + o.totalAmount, 0);
     const tip = tipPercentage ? Math.round((tipPercentage / 100) * total) : 0;
@@ -184,9 +185,9 @@ router.post('/pay-table', async (req, res) => {
       order.totalWithTip = order.totalAmount + order.tipAmount;
       await order.save();
     }
-    res.json({ mesaj: 'Toate comenzile au fost platite.', total, tip });
+    res.json({ mesaj: STRINGS.ALL_ORDERS_PAID, total, tip });
   } catch (err) {
-    res.status(500).json({ mesaj: 'Eroare la procesarea platii.' });
+    res.status(500).json({ mesaj: STRINGS.PAYMENT_PROCESS_ERROR });
   }
 });
 
@@ -200,7 +201,7 @@ router.get('/buzz-status', async (req, res) => {
     const tableNumbers = activeRequests.map(req => req.tableNumber);
     res.json({ tables: tableNumbers });
   } catch (err) {
-    res.status(500).json({ mesaj: 'Eroare la verificarea cererilor BUZZ.' });
+    res.status(500).json({ mesaj: STRINGS.BUZZ_STATUS_ERROR });
   }
 });
 
@@ -241,7 +242,7 @@ router.get('/stats', async (req, res) => {
       topProducts
     });
   } catch (err) {
-    res.status(500).json({ mesaj: 'Eroare la generarea statisticilor.' });
+    res.status(500).json({ mesaj: STRINGS.STATS_GENERATION_ERROR });
   }
 });
 

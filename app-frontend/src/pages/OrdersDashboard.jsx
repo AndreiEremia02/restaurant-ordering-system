@@ -15,6 +15,13 @@ function OrdersDashboard() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState(null);
 
+  useEffect(() => {
+    const loggedEmployee = sessionStorage.getItem('loggedEmployee');
+    if (!loggedEmployee) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
   const pathParts = location.pathname.split('/');
   const employeeId = pathParts[2] || '';
 
@@ -23,6 +30,7 @@ function OrdersDashboard() {
     refreshBuzzState();
 
     const buzzHandler = () => refreshBuzzState();
+
     window.addEventListener('buzzUpdated', buzzHandler);
 
     const buzzInterval = setInterval(refreshBuzzState, 5000);
@@ -51,13 +59,11 @@ function OrdersDashboard() {
   const refreshBuzzState = async () => {
     try {
       const response = await axios.get(`${API_BASE}/api/buzz-status`);
+      const buzzTables = response.data.tables;
       const buzz = {};
-      response.data.tables.forEach(tableNum => {
-        const activeOrders = ordersByTable[String(tableNum)];
-        if (activeOrders && activeOrders.length > 0) {
-          buzz[tableNum] = true;
-        }
-      });
+      for (let i = 1; i <= 8; i++) {
+        buzz[i] = buzzTables.includes(i) || buzzTables.includes(i.toString());
+      }
       setBuzzState(buzz);
     } catch (e) {
       setBuzzState({});
@@ -112,7 +118,7 @@ function OrdersDashboard() {
             className="stats-button"
             onClick={() => navigate(`/employee/${employeeId}/stats`)}
           >
-            STATISTICI
+            {TEXTS.DASHBOARD.STATISTICS}
           </button>
           <button
             className="logout-button"
@@ -139,7 +145,7 @@ function OrdersDashboard() {
                   {TEXTS.DASHBOARD.TABLE_LABEL} #{tableNumber} - {orders.length} {TEXTS.DASHBOARD.ACTIVE_ORDERS}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  {buzzState[tableNumber] && orders.length > 0 && (
+                  {buzzState[tableNumber] && (
                     <span className="buzz-badge">{TEXTS.DASHBOARD.BUZZ}</span>
                   )}
                   <span className="arrow">{isExpanded ? '▲' : '▼'}</span>
@@ -200,8 +206,8 @@ function OrdersDashboard() {
           <div className="confirm-delete-popup">
             <p>{TEXTS.DASHBOARD.DELETE_CONFIRMATION}"{deleteOrderId?.slice(-6)}"?</p>
             <div className="confirm-delete-buttons">
-              <button id="btn-confirm-delete" onClick={deleteOrder}>DA</button>
-              <button id="btn-cancel-delete" onClick={cancelDelete}>NU</button>
+              <button id="btn-confirm-delete" onClick={deleteOrder}>{TEXTS.DASHBOARD.CONFIRM_YES}</button>
+              <button id="btn-cancel-delete" onClick={cancelDelete}>{TEXTS.DASHBOARD.CONFIRM_NO}</button>
             </div>
           </div>
         </div>

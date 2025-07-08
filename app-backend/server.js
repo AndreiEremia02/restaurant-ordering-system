@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
+const STRINGS = require('./strings');
 
 const { router: menuRouter } = require('./routes/menuRoutes');
 const ordersRoutes = require('./routes/ordersRoutes');
@@ -18,7 +19,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('CORS not allowed'));
+      callback(new Error(STRINGS.CORS_NOT_ALLOWED));
     }
   },
   credentials: true
@@ -32,11 +33,16 @@ app.use('/api', ordersRoutes);
 app.use('/api/employees', employeeRoutes);
 
 app.get('/', (req, res) => {
-  res.send('Server running');
+  res.send(STRINGS.SERVER_RUNNING);
 });
 
 mongoose.connect(process.env.MONGO_URI, { dbName: 'smashlyBD' })
-  .then(() => {})
-  .catch(() => {});
-
-app.listen(PORT, () => {});
+  .then(() => {
+    console.log('Connected to MongoDB!');
+    app.listen(PORT, () => {
+      console.log(`${STRINGS.SERVER_RUNNING} on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error(`${STRINGS.SERVER_ERROR}:`, err);
+  });
